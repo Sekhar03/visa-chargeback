@@ -2,11 +2,25 @@ const express = require('express');
 const router = express.Router();
 const Chargeback = require('../models/Chargeback');
 
-// Get disputes with filtering
+// Get disputes with filtering and RBAC
 router.get('/', async (req, res) => {
   try {
     const { from, to, rrn, status, subStatus, search } = req.query;
+    const userRole = req.headers['x-user-role'];
+    const userName = req.headers['x-user-name'];
+    const partnerId = req.headers['x-partner-id'];
+
     let query = {};
+
+    // Role-Based Access Control
+    if (userRole === 'merchant') {
+      if (!userName) return res.status(400).json({ message: 'Missing x-user-name header for merchant' });
+      query.userName = userName;
+    } else if (userRole === 'partner') {
+      if (!partnerId) return res.status(400).json({ message: 'Missing x-partner-id header for partner' });
+      query.partnerId = partnerId;
+    }
+    // Admin sees all, no query restriction needed
 
     if (from || to) {
       query.createdDate = {};
@@ -86,6 +100,34 @@ router.put('/:id', async (req, res) => {
     // If a timeline entry is provided in updates, push it to timeline array
     if (updates.timelineEntry) {
       dispute.timeline.unshift(updates.timelineEntry); // Prepend to show newest first
+    }
+
+    const updated = await dispute.save();
+    res.json(updated);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+});
+// Process dispute action (accept, contest, escalate)
+router.post('/:id/action', async (req, res) => {
+  try {
+    const { action, evidence, comments } = req.body;
+    const dispute = await Chargeback.findOne({ id: req.params.id });
+    if (!dispute) return res.status(404).json({ message: 'Dispute not found' });
+
+    if (action === 'accept') {
+      dispute.resolution = 'Lost';
+      dispute.mSubStatus = 'Chargeback Lost';
+      dispute.merchantAction = 'accepted';
+      dispute.timeline.unshift({ by: req.headers['x-user-name'] || 'System', time: new Date().toISOString(), title: 'Accepted Liability', remarks: 'Merchant accepted the dispute loss.', file: null });
+    } else if (action === 'contest') {
+      dispute.mSubStatus = 'Chargeback in Progress';
+      dispute.merchantAction = 'evidence';
+      dispute.timeline.unshift({ by: req.headers['x-user-name'] || 'System', time: new Date().toISOString(), title: 'Evidence Submitted', remarks: comments || 'Evidence provided to fight dispute.', file: evidence || null });
+    } else if (action === 'escalate') {
+      dispute.mStatus = 'Pre-Arbitration';
+      dispute.mSubStatus = 'Pending Visa Review';
+      dispute.timeline.unshift({ by: 'Admin', time: new Date().toISOString(), title: 'Escalated to Pre-Arb', remarks: 'Case sent to Visa for Pre-Arbitration.', file: null });
     }
 
     const updated = await dispute.save();

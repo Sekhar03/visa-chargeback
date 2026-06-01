@@ -17,33 +17,31 @@ app.use(express.json());
 // Enable CORS
 app.use(cors());
 
-// MOCK_MODE Interceptor for Vercel Demo
-app.use((req, res, next) => {
-  if (global.MOCK_MODE && req.method === 'GET') {
-    if (req.path === '/api/users' || req.path === '/api/users/') {
-      return res.json([
-        { username: 'Test@isu', password: 'Test@2026', role: 'merchant', name: 'masteruser' },
-        { username: 'masteruser', password: 'Test@2026', role: 'merchant', name: 'masteruser' },
-        { username: 'Test@Ad', password: 'Test@2027', role: 'admin', name: 'Krishna Das' },
-        { username: 'partneruser', password: 'Test@2028', role: 'partner', name: 'Arjun Mehta (Partner)' }
-      ]);
-    }
-    if (req.path.startsWith('/api/users/')) {
-       // mock single user
-       return res.json({ username: 'masteruser', password: 'Test@2026', role: 'merchant', name: 'masteruser' });
-    }
-    if (req.path === '/api/disputes' || req.path === '/api/disputes/') {
-      const auth = require('./routes/auth');
-      return res.json(auth.buildSeedData(new Date()));
-    }
-  }
-  
-  if (global.MOCK_MODE && req.method === 'POST') {
-     return res.json({ message: 'Success (Mock Mode)' });
-  }
+const fs = require('fs');
+const path = require('path');
+const multer = require('multer');
 
-  next();
+// Configure multer for evidence uploads
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const uploadDir = path.join(__dirname, 'uploads');
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir);
+    }
+    cb(null, uploadDir);
+  },
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + '-' + file.originalname);
+  }
 });
+const upload = multer({ storage });
+app.post('/api/upload', upload.single('evidence'), (req, res) => {
+  if (!req.file) return res.status(400).json({ message: 'No file uploaded' });
+  res.json({ filePath: `/uploads/${req.file.filename}` });
+});
+
+// Serve uploaded files statically
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Mount routers
 app.use('/api/users', require('./routes/auth'));

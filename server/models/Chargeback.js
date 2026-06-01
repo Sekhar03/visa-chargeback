@@ -22,8 +22,10 @@ const chargebackSchema = new mongoose.Schema({
   txnDate: { type: String, required: true },     // Date string (YYYY-MM-DD)
   adjDate: { type: String, required: true },     // Date string (YYYY-MM-DD)
   respondByDate: { type: String, required: true },// Date string (YYYY-MM-DD)
-  mStatus: { type: String, required: true },
-  mSubStatus: { type: String, required: true },
+  mStatus: { type: String, required: true, default: 'Chargeback' }, // Retrieval, Chargeback, Pre-Arb, Arbitration
+  mSubStatus: { type: String, required: true, default: 'Pending' },
+  resolution: { type: String, enum: ['Won', 'Lost', 'Pending'], default: 'Pending' },
+  partnerId: { type: String, default: null },
   adjType: { type: String, required: true },
   remitter: { type: String, default: 'AXB' },
   beneficiary: { type: String, default: 'FIP' },

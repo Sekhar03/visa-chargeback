@@ -13,8 +13,17 @@ const userSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    enum: ['merchant', 'admin'],
+    enum: ['merchant', 'admin', 'partner'],
     required: true
+  },
+  status: {
+    type: String,
+    enum: ['active', 'suspended'],
+    default: 'active'
+  },
+  partnerId: {
+    type: String,
+    default: null
   },
   name: {
     type: String,

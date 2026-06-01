@@ -38,20 +38,29 @@ export default function App() {
 
   const refreshAllData = useCallback(async () => {
     try {
-      const resUsers = await fetch(`${API_URL}/users`);
+      const headers = {};
+      if (currentUser) {
+        headers['x-user-role'] = currentUser.role;
+        headers['x-user-name'] = currentUser.username;
+        if (currentUser.role === 'partner') {
+          headers['x-partner-id'] = currentUser.username;
+        }
+      }
+
+      const resUsers = await fetch(`${API_URL}/users`, { headers });
       const dataUsers = await resUsers.json();
       setUsers(dataUsers);
 
-      const resDisputes = await fetch(`${API_URL}/disputes`);
+      const resDisputes = await fetch(`${API_URL}/disputes`, { headers });
       const dataDisputes = await resDisputes.json();
       setChargebacks(dataDisputes);
 
-      const resLedger = await fetch(`${API_URL}/ledger`);
+      const resLedger = await fetch(`${API_URL}/ledger`, { headers }).catch(() => ({ json: () => [] }));
       const dataLedger = await resLedger.json();
       setLedger(dataLedger);
 
       // Keep current user session synced with updated database balance
-      if (currentUser) {
+      if (currentUser && Array.isArray(dataUsers)) {
         const found = dataUsers.find(u => u.username === currentUser.username);
         if (found) {
           setCurrentUser(prev => prev ? ({ ...prev, walletBalance: found.walletBalance }) : null);
@@ -527,21 +536,18 @@ function MerchantPortal({
   // Confirm Accept Dispute Action
   const confirmAccept = async () => {
     try {
-      const entry = {
-        by: currentUser.name,
-        time: new Date().toLocaleString(),
-        title: 'Merchant Accepted Dispute',
-        remarks: acceptRemarks || 'Accepted',
-        file: null
-      };
+      const headers = { 'Content-Type': 'application/json' };
+      if (currentUser) {
+        headers['x-user-role'] = currentUser.role;
+        headers['x-user-name'] = currentUser.username;
+      }
 
-      const response = await fetch(`${API_URL}/disputes/${targetDisputeId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch(`${API_URL}/disputes/${targetDisputeId}/action`, {
+        method: 'POST',
+        headers,
         body: JSON.stringify({
-          merchantAction: 'accepted',
-          mSubStatus: 'Chargeback Lost',
-          timelineEntry: entry
+          action: 'accept',
+          comments: acceptRemarks || 'Accepted'
         })
       });
 
@@ -561,22 +567,19 @@ function MerchantPortal({
   // Submit Evidence Contest Action — also marks visaPending for Visa review
   const submitContestEvidence = async () => {
     try {
-      const entry = {
-        by: currentUser.name,
-        time: new Date().toLocaleString(),
-        title: 'Evidence Submitted by ' + currentUser.name + ' (Partner Representation)',
-        remarks: (contestRemarks || 'Contested') + ' — Evidence forwarded to Acquirer on behalf of Partner for Visa consideration.',
-        file: 'EvidenceSubmitted.pdf'
-      };
+      const headers = { 'Content-Type': 'application/json' };
+      if (currentUser) {
+        headers['x-user-role'] = currentUser.role;
+        headers['x-user-name'] = currentUser.username;
+      }
 
-      const response = await fetch(`${API_URL}/disputes/${targetDisputeId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch(`${API_URL}/disputes/${targetDisputeId}/action`, {
+        method: 'POST',
+        headers,
         body: JSON.stringify({
-          merchantAction: 'evidence',
-          mSubStatus: 'Chargeback in Progress',
-          visaPending: true,
-          timelineEntry: entry
+          action: 'contest',
+          comments: (contestRemarks || 'Contested') + ' — Evidence forwarded to Acquirer on behalf of Partner for Visa consideration.',
+          evidence: evidenceFiles[1] || 'EvidenceSubmitted.pdf'
         })
       });
 
@@ -587,6 +590,30 @@ function MerchantPortal({
         await refreshAllData();
       } else {
         showToast('Evidence submit failed', 'error');
+      }
+    } catch (err) {
+      console.error(err);
+      showToast('API error', 'error');
+    }
+  };
+
+  const handleEscalate = async (id) => {
+    try {
+      const headers = { 'Content-Type': 'application/json' };
+      if (currentUser) {
+        headers['x-user-role'] = currentUser.role;
+        headers['x-user-name'] = currentUser.username;
+      }
+      const response = await fetch(`${API_URL}/disputes/${id}/action`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ action: 'escalate' })
+      });
+      if (response.ok) {
+        showToast('Escalated to Pre-Arb successfully');
+        await refreshAllData();
+      } else {
+        showToast('Escalation failed', 'error');
       }
     } catch (err) {
       console.error(err);
@@ -3537,7 +3564,7 @@ function AdminPortal({
                         <button className="btn btn-sm btn-primary" style={{ marginLeft: '12px' }} onClick={() => { setActiveModal('remarks'); }}>
                           Represent & Upload Evidence
                         </button>
-                        <button className="btn btn-sm" style={{ background: '#0288d1', color: '#fff', marginLeft: '8px' }} onClick={() => { showToast('Escalated to Pre-Arb'); }}>
+                        <button className="btn btn-sm" style={{ background: '#0288d1', color: '#fff', marginLeft: '8px' }} onClick={() => handleEscalate(targetDisputeId)}>
                           Escalate to Pre-Arb
                         </button>
                         <button className="btn btn-sm" style={{ background: 'var(--purple)', color: '#fff', marginLeft: '8px' }} onClick={() => { setActiveModal('arbitration'); }}>
