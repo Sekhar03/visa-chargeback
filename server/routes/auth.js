@@ -2,7 +2,6 @@ const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
 const Chargeback = require('../models/Chargeback');
-const Ledger = require('../models/Ledger');
 
 // Fetch all users
 router.get('/', async (req, res) => {
@@ -471,26 +470,7 @@ router.post('/seed', async (req, res) => {
       await Chargeback.insertMany(defaultChargebacks);
       chargebacksSeeded = true;
     }
-
-    // 3. Seed Ledger
-    const ledgerCount = await Ledger.countDocuments();
-    let ledgerSeeded = false;
-    if (ledgerCount === 0) {
-      const defaultLedger = [
-        { id: 'ADJ001', merchant: 'masteruser', type: 'Credit', amount: 8500, date: daysAgo(10), remarks: 'Chargeback Won — CB007 VISA dispute reversal credited' },
-        { id: 'ADJ002', merchant: 'masteruser', type: 'Credit', amount: 4200, date: daysAgo(6), remarks: 'Chargeback Won — CB008 Rupay dispute reversal credited' },
-        { id: 'ADJ003', merchant: 'masteruser', type: 'Debit', amount: 1500, date: daysAgo(10), remarks: 'Chargeback Lost — CB003 debit adjustment applied' },
-        { id: 'ADJ004', merchant: 'masteruser', type: 'Debit', amount: 6700, date: daysAgo(15), remarks: 'Chargeback Lost — CB014 Mastercard ruling debit' },
-        { id: 'ADJ005', merchant: 'masteruser', type: 'Credit', amount: 3300, date: daysAgo(4), remarks: 'Chargeback Won — CB017 VISA dispute won, credit applied' },
-        { id: 'ADJ006', merchant: 'masteruser', type: 'Debit', amount: 500, date: daysAgo(5), remarks: 'Processing fee — chargeback dispute handling fee Q1' },
-        { id: 'ADJ007', merchant: 'masteruser', type: 'Credit', amount: 2000, date: daysAgo(2), remarks: 'Manual credit adjustment — goodwill reversal by admin' },
-        { id: 'ADJ008', merchant: 'masteruser', type: 'Debit', amount: 350, date: daysAgo(1), remarks: 'Platform fee deduction — May 2026' }
-      ];
-      await Ledger.insertMany(defaultLedger);
-      ledgerSeeded = true;
-    }
-
-    res.json({ message: 'Seeding completed', usersSeeded, chargebacksSeeded, ledgerSeeded });
+    res.json({ message: 'Seeding completed', usersSeeded, chargebacksSeeded });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -500,7 +480,6 @@ router.post('/seed', async (req, res) => {
 router.post('/reseed', async (req, res) => {
   try {
     await Chargeback.deleteMany({});
-    await Ledger.deleteMany({});
 
     // Ensure partneruser exists
     const partnerExists = await User.findOne({ username: 'partneruser' });
@@ -515,22 +494,9 @@ router.post('/reseed', async (req, res) => {
     const chargebacks = buildSeedData(TODAY);
     await Chargeback.insertMany(chargebacks);
 
-    const ledger = [
-      { id: 'ADJ001', merchant: 'masteruser', type: 'Credit', amount: 8500, date: dA(10), remarks: 'Chargeback Won — CB007 VISA dispute reversal credited' },
-      { id: 'ADJ002', merchant: 'masteruser', type: 'Credit', amount: 4200, date: dA(6), remarks: 'Chargeback Won — CB008 Rupay dispute reversal credited' },
-      { id: 'ADJ003', merchant: 'masteruser', type: 'Debit', amount: 1500, date: dA(10), remarks: 'Chargeback Lost — CB003 debit adjustment applied' },
-      { id: 'ADJ004', merchant: 'masteruser', type: 'Debit', amount: 6700, date: dA(15), remarks: 'Chargeback Lost — CB014 Mastercard ruling debit' },
-      { id: 'ADJ005', merchant: 'masteruser', type: 'Credit', amount: 3300, date: dA(4), remarks: 'Chargeback Won — CB017 VISA dispute won, credit applied' },
-      { id: 'ADJ006', merchant: 'masteruser', type: 'Debit', amount: 500, date: dA(5), remarks: 'Processing fee — chargeback dispute handling fee Q1' },
-      { id: 'ADJ007', merchant: 'masteruser', type: 'Credit', amount: 2000, date: dA(2), remarks: 'Manual credit adjustment — goodwill reversal by admin' },
-      { id: 'ADJ008', merchant: 'masteruser', type: 'Debit', amount: 350, date: dA(1), remarks: 'Platform fee deduction — May 2026' }
-    ];
-    await Ledger.insertMany(ledger);
-
     res.json({
       message: 'Force reseed completed successfully',
-      chargebacks: chargebacks.length,
-      ledger: ledger.length
+      chargebacks: chargebacks.length
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
