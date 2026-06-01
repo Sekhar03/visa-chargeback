@@ -145,32 +145,29 @@ export default function App() {
            d.getFullYear();
   };
 
-  const loginAs = (role) => {
-    if (role === 'merchant') {
-      const u = users.find(x => x.username === 'masteruser');
-      if (u) {
-        setCurrentUser(u);
+  const handleLogin = (e, username, password) => {
+    e.preventDefault();
+    const u = users.find(x => x.username === username && x.password === password);
+    if (u) {
+      setCurrentUser(u);
+      setView(u.role);
+      showToast(`Logged in as ${u.name} (${u.role})`);
+    } else {
+      // Fallback for Vercel demo if API fetch failed
+      if (username === 'masteruser' && password === 'Test@2026') {
+        setCurrentUser({ username: 'masteruser', name: 'masteruser', role: 'merchant' });
         setView('merchant');
         showToast('Logged in as masteruser (Merchant)');
-      }
-    } else if (role === 'partner') {
-      const u = users.find(x => x.username === 'partneruser');
-      if (u) {
-        setCurrentUser(u);
+      } else if (username === 'Test@Ad' && password === 'Test@2027') {
+        setCurrentUser({ username: 'Test@Ad', name: 'Krishna Das', role: 'admin' });
+        setView('admin');
+        showToast('Logged in as Krishna Das (Admin)');
+      } else if (username === 'partneruser' && password === 'Test@2028') {
+        setCurrentUser({ username: 'partneruser', name: 'Arjun Mehta (Partner)', role: 'partner' });
         setView('partner');
         showToast('Logged in as Arjun Mehta (Partner)');
       } else {
-        // Fallback if not seeded yet
-        setCurrentUser({ username: 'partneruser', name: 'Arjun Mehta (Partner)', role: 'partner', walletBalance: 0 });
-        setView('partner');
-        showToast('Logged in as Partner');
-      }
-    } else {
-      const u = users.find(x => x.username === 'Test@Ad');
-      if (u) {
-        setCurrentUser(u);
-        setView('admin');
-        showToast('Logged in as Krishna Das (Admin)');
+        alert('Invalid username or password');
       }
     }
   };
@@ -191,7 +188,7 @@ export default function App() {
   return (
     <>
       {view === 'selector' && (
-        <PortalSelector loginAs={loginAs} toggleTheme={toggleTheme} darkMode={darkMode} />
+        <LoginForm handleLogin={handleLogin} toggleTheme={toggleTheme} darkMode={darkMode} />
       )}
       
       {view === 'merchant' && currentUser && (
@@ -258,10 +255,13 @@ export default function App() {
 // ═════════════════════════════════════════════
 // PORTAL SELECTOR PAGE
 // ═════════════════════════════════════════════
-function PortalSelector({ loginAs, toggleTheme, darkMode }) {
+function LoginForm({ handleLogin, toggleTheme, darkMode }) {
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+
   return (
-    <div className="portal-selector-container">
-      <div className="portal-selector-card" style={{ position: 'relative' }}>
+    <div className="portal-selector-container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', background: 'var(--bg)' }}>
+      <div className="portal-selector-card" style={{ position: 'relative', width: '100%', maxWidth: '400px', padding: '40px', background: 'var(--card)', borderRadius: 'var(--radius-lg)', boxShadow: 'var(--shadow-lg)' }}>
         <button 
           className="theme-toggle-btn" 
           onClick={toggleTheme} 
@@ -269,27 +269,26 @@ function PortalSelector({ loginAs, toggleTheme, darkMode }) {
         >
           {darkMode ? '☀️' : '🌙'}
         </button>
-        <div className="portal-selector-logo">iServeU<span>®</span></div>
-        <p className="portal-selector-subtitle">Chargeback &amp; Dispute Resolution Management Platform</p>
-        <div className="portal-choices">
-          <div className="portal-choice" onClick={() => loginAs('merchant')}>
-            <div className="portal-choice-icon">🌐</div>
-            <div className="portal-choice-title">Merchant Portal</div>
-            <p className="portal-choice-desc">Represent payment claims, submit delivery evidences, track deadlines, and review analytics dashboards.</p>
-            <span className="portal-choice-meta">Auto Login: masteruser</span>
+        <div className="portal-selector-logo" style={{ textAlign: 'center', marginBottom: '10px' }}>iServeU<span>®</span></div>
+        <p className="portal-selector-subtitle" style={{ textAlign: 'center', marginBottom: '30px' }}>Sign in to continue to the portal</p>
+        
+        <form onSubmit={(e) => handleLogin(e, username, password)} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <div>
+            <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', marginBottom: '6px', color: 'var(--text)' }}>Username or Email</label>
+            <input type="text" className="form-control" placeholder="Enter username" value={username} onChange={e => setUsername(e.target.value)} required />
           </div>
-          <div className="portal-choice" onClick={() => loginAs('partner')}>
-            <div className="portal-choice-icon">🤝</div>
-            <div className="portal-choice-title">Partner Portal</div>
-            <p className="portal-choice-desc">Track merchant dispute submissions on your behalf, review evidence status, and monitor Visa escalations.</p>
-            <span className="portal-choice-meta">Auto Login: partneruser</span>
+          <div>
+            <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', marginBottom: '6px', color: 'var(--text)' }}>Password</label>
+            <input type="password" className="form-control" placeholder="Enter password" value={password} onChange={e => setPassword(e.target.value)} required />
           </div>
-          <div className="portal-choice" onClick={() => loginAs('admin')}>
-            <div className="portal-choice-icon">💼</div>
-            <div className="portal-choice-title">Admin Dashboard</div>
-            <p className="portal-choice-desc">Review merchant representations, raise new chargebacks (bulk CSV uploader), process adjustments, and NPCI arbitration.</p>
-            <span className="portal-choice-meta">Auto Login: Krishna Das</span>
-          </div>
+          <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: '10px', height: '44px', fontSize: '15px' }}>Login</button>
+        </form>
+        
+        <div style={{ marginTop: '24px', fontSize: '12px', color: 'var(--text-muted)', textAlign: 'center', lineHeight: '1.6' }}>
+          <strong style={{ color: 'var(--brand)' }}>Demo Credentials:</strong><br />
+          <span style={{ display: 'inline-block', marginTop: '6px' }}>Merchant: <b>masteruser</b> / <b>Test@2026</b></span><br />
+          <span style={{ display: 'inline-block', marginTop: '4px' }}>Admin: <b>Test@Ad</b> / <b>Test@2027</b></span><br />
+          <span style={{ display: 'inline-block', marginTop: '4px' }}>Partner: <b>partneruser</b> / <b>Test@2028</b></span>
         </div>
       </div>
     </div>
