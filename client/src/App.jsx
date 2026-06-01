@@ -716,13 +716,19 @@ function MerchantPortal({
               className={`sb-item ${activePage === 'reports' ? 'active' : ''}`} 
               onClick={() => setActivePage('reports')}
             >
-              <span className="si">📋</span> Reports
+              <span className="si">📋</span> Dispute Management
+            </div>
+            <div 
+              className={`sb-item ${activePage === 'm-vamp' ? 'active' : ''}`} 
+              onClick={() => setActivePage('m-vamp')}
+            >
+              <span className="si">📈</span> VAMP Status & Calculator
             </div>
             <div 
               className={`sb-item ${disputeMenuOpen ? 'open' : ''}`} 
               onClick={() => setDisputeMenuOpen(!disputeMenuOpen)}
             >
-              <span className="si">👤</span> Dispute Management <span className="arr">▾</span>
+              <span className="si">📊</span> Filter Disputes <span className="arr">▾</span>
             </div>
             <div className={`sb-sub ${disputeMenuOpen ? 'open' : ''}`}>
               <div 
@@ -737,6 +743,12 @@ function MerchantPortal({
               >
                 <span className="ssi">📅</span> Dispute Respond By Date
               </div>
+            </div>
+            <div 
+              className={`sb-item ${activePage === 'm-reports' ? 'active' : ''}`} 
+              onClick={() => setActivePage('m-reports')}
+            >
+              <span className="si">📄</span> Reports
             </div>
           </div>
           <div style={{ marginTop: 'auto', padding: '16px' }}>
@@ -1374,8 +1386,8 @@ function MerchantPortal({
               <div className="page-inner">
                 <div className="page-hdr">
                   <div>
-                    <h1>Dispute Reports &amp; Analytics</h1>
-                    <p>Search, filter and analyze dispute data across all dimensions</p>
+                    <h1>📋 Dispute Management</h1>
+                    <p>Monitor, respond to, and resolve your dispute cases</p>
                   </div>
                 </div>
 
@@ -1475,13 +1487,13 @@ function MerchantPortal({
                 <div className="tbl-card" style={{ overflow: 'visible' }}>
                   <div className="report-tabs" style={{ padding: '0 16px' }}>
                     <div className={`report-tab ${reportTab === 'dispute-mgmt' ? 'active' : ''}`} onClick={() => setReportTab('dispute-mgmt')}>
-                      Dispute Management
+                      All Disputes
                     </div>
                     <div className={`report-tab ${reportTab === 'doc-pending' ? 'active' : ''}`} onClick={() => setReportTab('doc-pending')}>
-                      Document Pending from Merchant
+                      Action Required
                     </div>
                     <div className={`report-tab ${reportTab === 'doc-verification' ? 'active' : ''}`} onClick={() => setReportTab('doc-verification')}>
-                      Document Pending for Verification
+                      Pending Verification
                     </div>
                   </div>
 
@@ -1669,6 +1681,55 @@ function MerchantPortal({
               </div>
             </div>
           )}
+
+          {/* VAMP Status & Calculator */}
+          {activePage === 'm-vamp' && (
+            <div className="page active">
+              <div className="page-inner">
+                <h3 style={{ fontSize: '20px', fontWeight: '700', marginBottom: '20px' }}>VAMP Status & Calculator</h3>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                  <div style={{ background: 'var(--card)', padding: '20px', borderRadius: 'var(--radius)' }}>
+                    <h4>Current VAMP Status</h4>
+                    <div style={{ marginTop: '16px', display: 'flex', alignItems: 'flex-end', gap: '10px' }}>
+                      <span style={{ fontSize: '32px', fontWeight: '800', color: 'var(--brand)' }}>0.85%</span>
+                      <span style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '6px' }}>Safe (Limit: 2.2%)</span>
+                    </div>
+                    <div style={{ marginTop: '20px', background: '#eee', height: '8px', borderRadius: '4px', overflow: 'hidden' }}>
+                      <div style={{ background: 'var(--brand)', height: '100%', width: '38%' }}></div>
+                    </div>
+                  </div>
+                  <div style={{ background: 'var(--card)', padding: '20px', borderRadius: 'var(--radius)' }}>
+                    <h4>VAMP Calculator</h4>
+                    <p style={{fontSize: '13px', color: 'var(--text-muted)', marginBottom: '16px'}}>Project your future ratio based on expected volume.</p>
+                    <div className="mf"><label>Expected Sales Volume (Total Txns)</label><input type="number" className="mfi" placeholder="e.g. 5000" /></div>
+                    <div className="mf" style={{marginTop: '10px'}}><label>Expected Disputes</label><input type="number" className="mfi" placeholder="e.g. 15" /></div>
+                    <button className="btn btn-outline" style={{marginTop: '16px', width: '100%'}} onClick={() => showToast('Calculated Projected VAMP: 0.30%')}>Calculate</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Merchant Reports & Templates */}
+          {activePage === 'm-reports' && (
+            <div className="page active">
+              <div className="page-inner">
+                <h3 style={{ fontSize: '20px', fontWeight: '700', marginBottom: '20px' }}>Reports & Rebuttal Templates</h3>
+                <div style={{ display: 'flex', gap: '16px', marginBottom: '20px' }}>
+                  <button className="btn btn-primary" onClick={() => showToast('Dispute History Exported')}>Export Dispute History</button>
+                  <button className="btn btn-secondary" onClick={() => showToast('VAMP History Exported')}>Export VAMP History</button>
+                </div>
+                <div style={{ background: 'var(--card)', padding: '20px', borderRadius: 'var(--radius)' }}>
+                  <h4>Manage Rebuttal Templates</h4>
+                  <ul style={{ paddingLeft: '20px', marginTop: '16px', fontSize: '14px', lineHeight: '1.8' }}>
+                    <li>Template 1: Services Not Provided (Standard Rebuttal) <button style={{background:'none', border:'none', color:'var(--brand)', cursor:'pointer'}}>[Edit]</button></li>
+                    <li>Template 2: Duplicate Processing (Standard Rebuttal) <button style={{background:'none', border:'none', color:'var(--brand)', cursor:'pointer'}}>[Edit]</button></li>
+                  </ul>
+                  <button className="btn btn-outline" style={{marginTop: '16px'}}>+ Add New Template</button>
+                </div>
+              </div>
+            </div>
+          )}
         </main>
       </div>
 
@@ -1766,43 +1827,11 @@ function MerchantPortal({
                   )}
                 </div>
                 
-                <div style={{ padding: '12px 20px', borderTop: '1px solid #e0e0e0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#fff', flexShrink: 0, zIndex: 10 }}>
-                  {reportTab === 'doc-pending' ? (
-                    <>
-                      <div style={{ flex: 1 }}>
-                        <select style={{ padding: '8px 12px', border: '1px solid #e0e0e0', borderRadius: '4px', fontSize: '13px', width: '250px', outline: 'none' }}>
-                          <option value="full">Dispute Accepted - Full</option>
-                          <option value="partial">Dispute Accepted - Partial</option>
-                          <option value="declined">Dispute Declined</option>
-                        </select>
-                      </div>
-                      <div style={{ display: 'flex', gap: '12px' }}>
-                        <button onClick={() => setActiveModal(null)} style={{ padding: '6px 16px', border: '1px solid #5e35b1', background: '#fff', color: '#5e35b1', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}>Cancel</button>
-                        <button style={{ padding: '6px 16px', border: 'none', background: '#5e35b1', color: '#fff', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}>Submit</button>
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      <div style={{ display: 'flex', gap: '8px' }}>
-                        {cb.merchantAction === 'rejected' && cb.adminAction === null && (
-                          <button className="btn btn-sm btn-primary" onClick={() => { setActiveModal('remarks'); }}>
-                            Review
-                          </button>
-                        )}
-                        {cb.mStatus.includes('Arbitration') && !cb.adminAction && (
-                          <button className="btn btn-sm" style={{ background: 'var(--purple)', color: '#fff' }} onClick={() => { setActiveModal('arbitration'); }}>
-                            Arb Decision
-                          </button>
-                        )}
-                        {(cb.mSubStatus.includes('Won') || cb.mSubStatus.includes('Accepted')) && cb.mSubStatus !== 'Refund Success' && cb.mSubStatus !== 'Refund On Hold' && (
-                          <button className="btn btn-sm btn-success" onClick={() => { setActiveModal('refund'); }}>
-                            Refund
-                          </button>
-                        )}
-                      </div>
-                      <button onClick={() => setActiveModal(null)} style={{ padding: '6px 16px', border: '1px solid #5e35b1', background: '#fff', color: '#5e35b1', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}>Cancel</button>
-                    </>
-                  )}
+                <div style={{ padding: '12px 20px', borderTop: '1px solid #e0e0e0', display: 'flex', justifyContent: 'flex-end', alignItems: 'center', background: '#fff', flexShrink: 0, zIndex: 10 }}>
+                  <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                    <button onClick={() => setActiveModal(null)} style={{ padding: '6px 16px', border: '1px solid #5e35b1', background: '#fff', color: '#5e35b1', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}>Close</button>
+                    {getActionBtn(cb)}
+                  </div>
                 </div>
               </div>
             );
@@ -1825,14 +1854,14 @@ function MerchantPortal({
                 style={{ width: '100%', marginBottom: '12px', height: '46px', fontSize: '15px' }} 
                 onClick={() => { setAcceptResponseSelect(''); setActiveModal('action2'); }}
               >
-                Accept Dispute
+                Accept Liability (Close as Lost)
               </button>
               <button 
                 className="btn btn-outline" 
                 style={{ width: '100%', height: '46px', fontSize: '15px' }} 
                 onClick={() => setActiveModal('contest')}
               >
-                Contest &amp; Upload Evidence
+                Fight Dispute &amp; Upload Evidence
               </button>
             </div>
           </div>
@@ -1848,8 +1877,8 @@ function MerchantPortal({
               <div style={{ position: 'relative', marginBottom: '16px' }}>
                 <select className="mf-sel-box" value={acceptResponseSelect} onChange={(e) => handleResponseSelect(e.target.value)}>
                   <option value="">Choose Response</option>
-                  <option value="accept">Accept Dispute</option>
-                  <option value="contest">Contest Dispute and Submit Evidence</option>
+                  <option value="accept">Accept Liability (Close as Lost)</option>
+                  <option value="contest">Fight Dispute and Submit Evidence</option>
                 </select>
               </div>
               {acceptResponseSelect === 'accept' && (
@@ -1868,7 +1897,7 @@ function MerchantPortal({
                   </div>
                   <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end', marginTop: '8px' }}>
                     <button className="btn btn-secondary" onClick={() => setActiveModal(null)}>Cancel</button>
-                    <button className="btn btn-primary" onClick={confirmAccept}>Accept Dispute</button>
+                    <button className="btn btn-primary" onClick={confirmAccept}>Accept Liability</button>
                   </div>
                 </div>
               )}
@@ -1885,7 +1914,7 @@ function MerchantPortal({
               <div style={{ fontSize: '13px', fontWeight: '600', marginBottom: '6px' }}>Selected Action</div>
               <div className="radio-opts" style={{ marginBottom: '16px' }}>
                 <label className="radio-opt">
-                  <input type="radio" name="contestOpt" checked={false} onChange={() => setActiveModal('action2')} /> Accept Dispute
+                  <input type="radio" name="contestOpt" checked={false} onChange={() => setActiveModal('action2')} /> Accept Liability
                 </label>
                 <label className="radio-opt">
                   <input type="radio" name="contestOpt" checked={true} readOnly /> Contest Dispute &amp; Upload Proofs
@@ -2671,6 +2700,24 @@ function AdminPortal({
             >
               <span className="si">⚙️</span> Visa VROL Webhook Status
             </div>
+            <div 
+              className={`sb-item ${activePage === 'a-vamp' ? 'active' : ''}`}
+              onClick={() => setActivePage('a-vamp')}
+            >
+              <span className="si">📈</span> VAMP Compliance
+            </div>
+            <div 
+              className={`sb-item ${activePage === 'a-merchant' ? 'active' : ''}`}
+              onClick={() => setActivePage('a-merchant')}
+            >
+              <span className="si">👥</span> Merchant Management
+            </div>
+            <div 
+              className={`sb-item ${activePage === 'a-config' ? 'active' : ''}`}
+              onClick={() => setActivePage('a-config')}
+            >
+              <span className="si">🛠️</span> Configuration
+            </div>
           </div>
           <div style={{ marginTop: 'auto', padding: '16px' }}>
             <button className="btn btn-secondary btn-sm" style={{ width: '100%' }} onClick={() => setView('selector')}>
@@ -3301,6 +3348,86 @@ function AdminPortal({
               </div>
             </div>
           )}
+
+          {/* VAMP Compliance */}
+          {activePage === 'a-vamp' && (
+            <div className="page active">
+              <div className="page-inner">
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                  <h3 style={{ fontSize: '20px', fontWeight: '700' }}>VAMP Compliance Dashboard</h3>
+                  <button className="btn btn-primary" onClick={() => showToast('Exported VAMP Report')}>Export Report</button>
+                </div>
+                <div className="table-responsive">
+                  <table className="data-table">
+                    <thead><tr><th>Merchant ID</th><th>Name</th><th>Dispute Count</th><th>Sales Vol</th><th>VAMP Ratio</th><th>Status</th></tr></thead>
+                    <tbody>
+                      {users.filter(u => u.role === 'merchant').map(m => {
+                        const mCb = chargebacks.filter(c => c.userName === m.username).length;
+                        const ratio = mCb > 0 ? ((mCb / 1000) * 100).toFixed(2) : '0.00';
+                        const isBreaching = parseFloat(ratio) >= 2.2;
+                        return (
+                          <tr key={m.username}>
+                            <td>{m.id || 'M-'+Math.floor(Math.random()*1000)}</td>
+                            <td>{m.name}</td>
+                            <td>{mCb}</td>
+                            <td>1,000</td>
+                            <td style={{ color: isBreaching ? 'red' : 'inherit', fontWeight: isBreaching ? 'bold' : 'normal' }}>{ratio}%</td>
+                            <td>{isBreaching ? <span className="badge badge-lost">Breaching</span> : <span className="badge badge-won">Safe</span>}</td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Merchant Management */}
+          {activePage === 'a-merchant' && (
+            <div className="page active">
+              <div className="page-inner">
+                <h3 style={{ fontSize: '20px', fontWeight: '700', marginBottom: '20px' }}>Merchant Management</h3>
+                <div className="table-responsive">
+                  <table className="data-table">
+                    <thead><tr><th>Merchant Name</th><th>Status</th><th>Actions</th></tr></thead>
+                    <tbody>
+                      {users.filter(u => u.role === 'merchant').map(m => (
+                        <tr key={m.username}>
+                          <td>{m.name}</td>
+                          <td><span className="badge badge-won">Active</span></td>
+                          <td>
+                            <button className="btn btn-warning btn-sm" style={{marginRight: '8px'}} onClick={() => showToast('Merchant Suspended')}>Suspend</button>
+                            <button className="btn btn-primary btn-sm" onClick={() => showToast('Alert Sent to Merchant')}>Alert Merchant</button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* System Configuration */}
+          {activePage === 'a-config' && (
+            <div className="page active">
+              <div className="page-inner">
+                <h3 style={{ fontSize: '20px', fontWeight: '700', marginBottom: '20px' }}>System Configuration</h3>
+                <div style={{ background: 'var(--card)', padding: '20px', borderRadius: 'var(--radius)' }}>
+                  <h4>VROL API Settings</h4>
+                  <div className="mf" style={{ marginTop: '16px' }}><label>API Key</label><input type="password" value="*****************" className="mfi" readOnly /></div>
+                  <div className="mf"><label>Webhook URL</label><input type="text" value="https://api.iserveu.in/vrol/webhook" className="mfi" readOnly /></div>
+                  <button className="btn btn-primary" onClick={() => showToast('Settings Updated')}>Update Connection</button>
+                </div>
+                <div style={{ background: 'var(--card)', padding: '20px', borderRadius: 'var(--radius)', marginTop: '20px' }}>
+                  <h4>Alert Rules & Roles</h4>
+                  <p style={{fontSize: '13px', color: 'var(--text-muted)'}}>Manage reason code mappings and user permissions here.</p>
+                  <button className="btn btn-outline" style={{marginTop: '10px'}} onClick={() => showToast('Opened role manager')}>Manage Roles</button>
+                </div>
+              </div>
+            </div>
+          )}
         </main>
       </div>
 
@@ -3401,12 +3528,21 @@ function AdminPortal({
                 <div style={{ padding: '12px 20px', borderTop: '1px solid #e0e0e0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#fff', flexShrink: 0, zIndex: 10 }}>
                   {adminTab === 'merchant-pending' ? (
                     <>
-                      <div style={{ flex: 1 }}>
+                          <div style={{ flex: 1 }}>
                         <select style={{ padding: '8px 12px', border: '1px solid #e0e0e0', borderRadius: '4px', fontSize: '13px', width: '250px', outline: 'none' }}>
                           <option value="full">Dispute Accepted - Full</option>
                           <option value="partial">Dispute Accepted - Partial</option>
                           <option value="declined">Dispute Declined</option>
                         </select>
+                        <button className="btn btn-sm btn-primary" style={{ marginLeft: '12px' }} onClick={() => { setActiveModal('remarks'); }}>
+                          Represent & Upload Evidence
+                        </button>
+                        <button className="btn btn-sm" style={{ background: '#0288d1', color: '#fff', marginLeft: '8px' }} onClick={() => { showToast('Escalated to Pre-Arb'); }}>
+                          Escalate to Pre-Arb
+                        </button>
+                        <button className="btn btn-sm" style={{ background: 'var(--purple)', color: '#fff', marginLeft: '8px' }} onClick={() => { setActiveModal('arbitration'); }}>
+                          Enter Visa Ruling
+                        </button>
                       </div>
                       <div style={{ display: 'flex', gap: '12px' }}>
                         <button onClick={() => setActiveModal(null)} style={{ padding: '6px 16px', border: '1px solid #5e35b1', background: '#fff', color: '#5e35b1', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}>Cancel</button>
@@ -3619,14 +3755,16 @@ function PartnerPortal({
           <div className="sb-welcome">Welcome, Partner</div>
           <div className="sb-section">
             <div className={`sb-item ${activePage === 'p-dashboard' ? 'active' : ''}`} onClick={() => setActivePage('p-dashboard')}>
-              <span className="si">⊞</span> Dashboard
+              <span className="si">⊞</span> Portfolio Analytics
             </div>
-            <div className={`sb-item ${activePage === 'p-disputes' ? 'active' : ''}`} onClick={() => setActivePage('p-disputes')}>
-              <span className="si">📋</span> Dispute Reports
+            <div className={`sb-item ${activePage === 'p-batch' ? 'active' : ''}`} onClick={() => setActivePage('p-batch')}>
+              <span className="si">🗂️</span> Batch Submissions
             </div>
-            <div className={`sb-item ${activePage === 'p-visa' ? 'active' : ''}`} onClick={() => setActivePage('p-visa')}>
-              <span className="si">🌐</span> Visa Escalations
-              {visaDisputes.length > 0 && <span style={{ marginLeft: 'auto', background: 'var(--brand)', color: '#fff', borderRadius: '10px', fontSize: '10px', padding: '2px 6px', fontWeight: '700' }}>{visaDisputes.length}</span>}
+            <div className={`sb-item ${activePage === 'p-controls' ? 'active' : ''}`} onClick={() => setActivePage('p-controls')}>
+              <span className="si">👥</span> Merchant Controls
+            </div>
+            <div className={`sb-item ${activePage === 'p-config' ? 'active' : ''}`} onClick={() => setActivePage('p-config')}>
+              <span className="si">🛠️</span> Bulk Config & API
             </div>
           </div>
           <div style={{ marginTop: 'auto', padding: '16px' }}>
@@ -3902,6 +4040,86 @@ function PartnerPortal({
                     <strong>ℹ️ Partner Information:</strong> When a merchant submits evidence to the acquirer on behalf of the partner, it is automatically flagged for Visa review. Visa will adjudicate based on scheme rules and notify the acquirer with the ruling.
                   </div>
                 )}
+              </div>
+            </div>
+          )}
+
+          {/* Batch Submissions */}
+          {activePage === 'p-batch' && (
+            <div className="page active">
+              <div className="page-inner">
+                <h3 style={{ fontSize: '20px', fontWeight: '700', marginBottom: '20px' }}>Batch Submissions (VROL)</h3>
+                <div style={{ background: 'var(--card)', padding: '20px', borderRadius: 'var(--radius)' }}>
+                  <h4>Run Batch Representment</h4>
+                  <p style={{fontSize: '13px', color: 'var(--text-muted)', marginBottom: '16px'}}>Submit representments to Visa on behalf of multiple merchants simultaneously.</p>
+                  <div className="mf"><label>Upload Batch File (.csv)</label><input type="file" className="mfi" /></div>
+                  <button className="btn btn-primary" style={{marginTop: '16px'}} onClick={() => showToast('Batch processed successfully!')}>Run Batch</button>
+                </div>
+                <div style={{ marginTop: '20px', background: 'var(--card)', padding: '20px', borderRadius: 'var(--radius)' }}>
+                  <h4>Incoming Webhook Events</h4>
+                  <p style={{fontSize: '13px', color: 'var(--text-muted)'}}>Monitoring live VROL events.</p>
+                  <div style={{ padding: '10px', background: '#f5f5f5', borderRadius: '4px', marginTop: '10px', fontSize: '12px', fontFamily: 'monospace' }}>[System] Listening for Visa webhooks...</div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Merchant Controls */}
+          {activePage === 'p-controls' && (
+            <div className="page active">
+              <div className="page-inner">
+                <h3 style={{ fontSize: '20px', fontWeight: '700', marginBottom: '20px' }}>Merchant Portfolio Controls</h3>
+                <div className="table-responsive">
+                  <table className="data-table">
+                    <thead><tr><th>Merchant Name</th><th>VAMP Ratio</th><th>Disputes</th><th>Actions</th></tr></thead>
+                    <tbody>
+                      <tr>
+                        <td>Myntra India</td>
+                        <td style={{color: 'green'}}>1.1%</td>
+                        <td>45</td>
+                        <td>
+                          <button className="btn btn-sm btn-outline" style={{marginRight: '8px'}} onClick={() => showToast('Tier changed')}>Change Tier</button>
+                          <button className="btn btn-sm btn-warning" onClick={() => showToast('Merchant suspended')}>Suspend</button>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>Flipkart Retail</td>
+                        <td style={{color: 'red', fontWeight: 'bold'}}>2.5%</td>
+                        <td>120</td>
+                        <td>
+                          <button className="btn btn-sm btn-outline" style={{marginRight: '8px'}} onClick={() => showToast('Tier changed')}>Change Tier</button>
+                          <button className="btn btn-sm btn-warning" onClick={() => showToast('Merchant suspended')}>Suspend</button>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Bulk Config */}
+          {activePage === 'p-config' && (
+            <div className="page active">
+              <div className="page-inner">
+                <h3 style={{ fontSize: '20px', fontWeight: '700', marginBottom: '20px' }}>Bulk Configuration & API Keys</h3>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                  <div style={{ background: 'var(--card)', padding: '20px', borderRadius: 'var(--radius)' }}>
+                    <h4>API Key Management</h4>
+                    <p style={{fontSize: '13px', color: 'var(--text-muted)', marginBottom: '16px'}}>Issue new API keys for merchants in your portfolio.</p>
+                    <div className="mf"><label>Merchant</label><select className="mfi-sel"><option>All Merchants</option><option>Myntra India</option></select></div>
+                    <button className="btn btn-outline" style={{marginTop: '16px'}} onClick={() => showToast('API Keys Generated')}>Generate Key</button>
+                  </div>
+                  <div style={{ background: 'var(--card)', padding: '20px', borderRadius: 'var(--radius)' }}>
+                    <h4>Bulk Services Toggle</h4>
+                    <p style={{fontSize: '13px', color: 'var(--text-muted)', marginBottom: '16px'}}>Apply configuration changes across multiple merchants.</p>
+                    <div style={{display: 'flex', flexDirection: 'column', gap: '10px'}}>
+                      <label style={{display: 'flex', alignItems: 'center', gap: '8px'}}><input type="checkbox" /> Enable Order Insight (Verifi)</label>
+                      <label style={{display: 'flex', alignItems: 'center', gap: '8px'}}><input type="checkbox" /> Enable RDR Auto-Decisioning</label>
+                    </div>
+                    <button className="btn btn-primary" style={{marginTop: '16px'}} onClick={() => showToast('Bulk configs applied')}>Apply Config</button>
+                  </div>
+                </div>
               </div>
             </div>
           )}
