@@ -46,6 +46,7 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 // Mount routers
 app.use('/api/users', require('./routes/auth'));
 app.use('/api/disputes', require('./routes/disputes'));
+app.use('/api/ledger', require('./routes/ledger'));
 const PORT = process.env.PORT || 5000;
 
 if (require.main === module) {

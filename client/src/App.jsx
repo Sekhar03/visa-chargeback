@@ -112,14 +112,20 @@ export default function App() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentUser]);
 
-  // Seed and fetch data on launch
+  // Seed demo data on launch (empty DB) then fetch
   useEffect(() => {
     const bootstrap = async () => {
       try {
-        // Seed database if empty
         await fetch(`${API_URL}/users/seed`, { method: 'POST' });
-        
-        // Load initial state
+        const cbRes = await fetch(`${API_URL}/disputes`, {
+          headers: { 'x-user-role': 'admin', 'x-user-name': 'Test@Ad' }
+        });
+        if (cbRes.ok) {
+          const existing = await cbRes.json();
+          if (!Array.isArray(existing) || existing.length === 0) {
+            await fetch(`${API_URL}/users/demo`, { method: 'POST' });
+          }
+        }
         await refreshAllData();
       } catch (err) {
         console.error("Initialization failed:", err);
@@ -141,6 +147,20 @@ export default function App() {
   const showToast = (text, type = 'success') => {
     setToastMsg({ text, type });
     setTimeout(() => setToastMsg({ text: '', type: '' }), 3400);
+  };
+
+  const loadDemoData = async () => {
+    try {
+      const res = await fetch(`${API_URL}/users/demo`, { method: 'POST' });
+      if (!res.ok) throw new Error('Demo seed failed');
+      await refreshAllData();
+      showToast('Demo data loaded — users, chargebacks & ledger');
+      return true;
+    } catch (err) {
+      console.error('Demo data load failed:', err);
+      showToast('Failed to load demo data', 'error');
+      return false;
+    }
   };
 
   // Format currencies and date utils
@@ -202,11 +222,15 @@ export default function App() {
   };
 
   const resetAllSessions = async () => {
-    if (confirm('Are you sure you want to reset MongoDB collections? (This seeds database back to defaults)')) {
+    if (confirm('Reset all demo data? Users, chargebacks, and ledger will be restored to defaults.')) {
       try {
+        const ok = await loadDemoData();
+        if (!ok) return;
         localStorage.removeItem('isu_session');
+        localStorage.removeItem('isu_currentUser');
+        localStorage.removeItem('isu_view');
+        setCurrentUser(null);
         setView('selector');
-        location.reload();
       } catch (err) {
         console.error("Reset error:", err);
         showToast('Failed to reset', 'error');
@@ -218,7 +242,7 @@ export default function App() {
     <>
       {/* Show login only when view is selector */}
       {view === 'selector' && (
-        <LoginForm handleLogin={handleLogin} toggleTheme={toggleTheme} darkMode={darkMode} />
+        <LoginForm handleLogin={handleLogin} toggleTheme={toggleTheme} darkMode={darkMode} onLoadDemo={loadDemoData} />
       )}
       
       {view === 'merchant' && currentUser && (
@@ -288,9 +312,17 @@ export default function App() {
 // ═════════════════════════════════════════════
 // PORTAL SELECTOR PAGE
 // ═════════════════════════════════════════════
-function LoginForm({ handleLogin, toggleTheme, darkMode }) {
+function LoginForm({ handleLogin, toggleTheme, darkMode, onLoadDemo }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [loadingDemo, setLoadingDemo] = useState(false);
+
+  const handleLoadDemo = async () => {
+    if (!onLoadDemo || loadingDemo) return;
+    setLoadingDemo(true);
+    await onLoadDemo();
+    setLoadingDemo(false);
+  };
 
   return (
     <div style={{ 
@@ -377,6 +409,19 @@ function LoginForm({ handleLogin, toggleTheme, darkMode }) {
               Secure Login
             </button>
           </form>
+          <button
+            type="button"
+            onClick={handleLoadDemo}
+            disabled={loadingDemo}
+            style={{
+              width: '100%', marginTop: '12px', padding: '12px', fontSize: '14px', fontWeight: '600',
+              background: 'transparent', color: 'var(--brand)',
+              border: `1.5px solid ${darkMode ? 'rgba(59,130,246,0.4)' : 'var(--brand-border)'}`,
+              borderRadius: '12px', cursor: loadingDemo ? 'wait' : 'pointer'
+            }}
+          >
+            {loadingDemo ? 'Loading demo data…' : '↻ Load / Reset All Demo Data'}
+          </button>
           
           <div style={{ marginTop: '36px', paddingTop: '24px', borderTop: darkMode ? '1px solid rgba(255,255,255,0.1)' : '1px solid #e2e8f0', fontSize: '13px', color: 'var(--text-muted)', textAlign: 'center', lineHeight: '1.8' }}>
             <strong style={{ color: 'var(--brand)', textTransform: 'uppercase', letterSpacing: '0.5px', fontSize: '11px' }}>Demo Access Details</strong><br />
@@ -446,7 +491,7 @@ function MerchantPortal({
   const [raisedSearchInput, setRaisedSearchInput] = useState('');
 
   // Compute Merchant Disputes
-  const merchantDisputes = chargebacks.filter(cb => cb.userName === 'masteruser');
+  const merchantDisputes = chargebacks.filter(cb => cb.userName === currentUser.username);
 
   // Dashboard calculations
   const getFilteredDashboardDisputes = () => {

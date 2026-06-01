@@ -739,62 +739,64 @@ const buildSeedData = (TODAY) => {
   ];
 }
 
-// ── Standard Seed ─────────────────────────────────────────────────────────────
+// ── Standard Seed (only fills empty collections) ─────────────────────────────
 router.post('/seed', async (req, res) => {
   try {
-    // 1. Seed Users
+    const { buildDefaultUsers, buildSeedLedger } = require('../seed/demoData');
+    const Ledger = require('../models/Ledger');
+
     const userCount = await User.countDocuments();
     let usersSeeded = false;
     if (userCount === 0) {
-      const defaultUsers = [
-        { username: 'Test@isu', password: 'Test@2026', role: 'merchant', name: 'masteruser', walletBalance: 964.35 },
-        { username: 'masteruser', password: 'Test@2026', role: 'merchant', name: 'masteruser', walletBalance: 964.35 },
-        { username: 'Test@Ad', password: 'Test@2027', role: 'admin', name: 'Krishna Das', walletBalance: 245800.00 },
-        { username: 'partneruser', password: 'Test@2028', role: 'partner', name: 'Arjun Mehta (Partner)', walletBalance: 0.00 }
-      ];
-      await User.insertMany(defaultUsers);
+      await User.insertMany(buildDefaultUsers());
       usersSeeded = true;
     }
-
-    // 2. Seed Chargebacks
-    const TODAY = new Date();
-    const fmtDate = d => d.toISOString().split('T')[0];
-    const daysAgo = n => { let d = new Date(TODAY); d.setDate(d.getDate() - n); return fmtDate(d); };
 
     const cbCount = await Chargeback.countDocuments();
     let chargebacksSeeded = false;
     if (cbCount === 0) {
-      const defaultChargebacks = buildSeedData(TODAY);
-      await Chargeback.insertMany(defaultChargebacks);
+      const TODAY = new Date();
+      const { PARTNER_ID } = require('../seed/demoData');
+      const chargebacks = buildSeedData(TODAY).map((cb) => ({ ...cb, partnerId: PARTNER_ID }));
+      await Chargeback.insertMany(chargebacks);
       chargebacksSeeded = true;
     }
-    res.json({ message: 'Seeding completed', usersSeeded, chargebacksSeeded });
+
+    const ledgerCount = await Ledger.countDocuments();
+    let ledgerSeeded = false;
+    if (ledgerCount === 0) {
+      await Ledger.insertMany(buildSeedLedger(new Date()));
+      ledgerSeeded = true;
+    }
+
+    res.json({ message: 'Seeding completed', usersSeeded, chargebacksSeeded, ledgerSeeded });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 });
 
-// ── Force Reseed: clears and reseeds all data ─────────────────────────────────
+// ── Full demo reset: users + chargebacks + ledger ───────────────────────────
+router.post('/demo', async (req, res) => {
+  try {
+    const { seedAllDemoData } = require('../seed/demoData');
+    const counts = await seedAllDemoData();
+    res.json({
+      message: 'Demo data loaded successfully',
+      ...counts
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// ── Force Reseed: alias for full demo reset ───────────────────────────────────
 router.post('/reseed', async (req, res) => {
   try {
-    await Chargeback.deleteMany({});
-
-    // Ensure partneruser exists
-    const partnerExists = await User.findOne({ username: 'partneruser' });
-    if (!partnerExists) {
-      await User.create({ username: 'partneruser', password: 'Test@2028', role: 'partner', name: 'Arjun Mehta (Partner)', walletBalance: 0 });
-    }
-
-    const TODAY = new Date();
-    const fmtDate = d => d.toISOString().split('T')[0];
-    const dA = n => { let d = new Date(TODAY); d.setDate(d.getDate() - n); return fmtDate(d); };
-
-    const chargebacks = buildSeedData(TODAY);
-    await Chargeback.insertMany(chargebacks);
-
+    const { seedAllDemoData } = require('../seed/demoData');
+    const counts = await seedAllDemoData();
     res.json({
       message: 'Force reseed completed successfully',
-      chargebacks: chargebacks.length
+      ...counts
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
