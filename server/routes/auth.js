@@ -437,6 +437,304 @@ const buildSeedData = (TODAY) => {
       timeline: [
         { by: 'iServeU', time: dA(30) + ' 01:00 PM', title: 'VROL Arbitration Lost', remarks: 'Visa Arbitration panel ruled in favor of cardholder.', file: null }
       ]
+    },
+    // CB024 — New Demo Data 1
+    {
+      id: 'CB024', caseId: 'CASE000024', userName: 'Test@isu', userId: '11111111',
+      rrn: '1234567890', txnId: '100001', terminalId: '5690020',
+      beneMobile: '9000000002', remMobile: '9000000003',
+      createdDate: dA(2), txnDate: dA(4), adjDate: dA(2), respondByDate: dL(6),
+      mStatus: 'Chargeback Raise', mSubStatus: 'Chargeback New',
+      adjType: 'Chargeback Raise', remitter: 'HDFC', beneficiary: 'FIP',
+      txnAmt: 2000, adjAmt: 2000, glNo: '354440',
+      currency: 'Rupees', reasonCode: '4808', pan: '411111*****',
+      product: 'VISA', aging: 2,
+      merchantAction: null, adminAction: null, visaPending: false,
+      timeline: [
+        { by: 'iServeU', time: dA(2) + ' 10:00 AM', title: 'Chargeback Raised', remarks: 'Customer disputes txn', file: null }
+      ]
+    },
+    // CB025 — New Demo Data 2 (Pre-Arb)
+    {
+      id: 'CB025', caseId: 'CASE000025', userName: 'Test@isu', userId: '11111111',
+      rrn: '1234567891', txnId: '100002', terminalId: '5690021',
+      beneMobile: '9000000004', remMobile: '9000000005',
+      createdDate: dA(10), txnDate: dA(12), adjDate: dA(10), respondByDate: dA(1),
+      mStatus: 'Pre-Arbitration Raise', mSubStatus: 'Chargeback in Progress',
+      adjType: 'Pre-Arbitration Raise', remitter: 'SBI', beneficiary: 'FIP',
+      txnAmt: 5000, adjAmt: 5000, glNo: '354441',
+      currency: 'Rupees', reasonCode: '4853', pan: '545454*****',
+      product: 'Mastercard', aging: 10,
+      merchantAction: 'evidence', adminAction: null, visaPending: true,
+      timeline: [
+        { by: 'Test@isu', time: dA(5) + ' 12:00 PM', title: 'Evidence Submitted', remarks: 'Provided delivery proof', file: 'Proof.pdf' }
+      ]
+    },
+    // CB026 — New Demo Data 3 (Arbitration)
+    {
+      id: 'CB026', caseId: 'CASE000026', userName: 'masteruser', userId: '2575789089',
+      rrn: '1234567892', txnId: '100003', terminalId: '5690022',
+      beneMobile: '9000000006', remMobile: '9000000007',
+      createdDate: dA(25), txnDate: dA(30), adjDate: dA(25), respondByDate: dA(5),
+      mStatus: 'VROL Arbitration', mSubStatus: 'Pending Visa Review',
+      adjType: 'Arbitration Raise', remitter: 'AXIS', beneficiary: 'FIP',
+      txnAmt: 15000, adjAmt: 15000, glNo: '354442',
+      currency: 'Rupees', reasonCode: '10.5', pan: '446001*****',
+      product: 'VISA', aging: 25,
+      merchantAction: 'evidence', adminAction: 'considered', visaPending: true,
+      timeline: [
+        { by: 'Krishna Das', time: dA(20) + ' 03:00 PM', title: 'Admin Considered — Sent to VISA', remarks: 'Case represented to Visa Arbitration.', file: null }
+      ]
+    },
+    // CB027 — New Demo Data 4 (Retrieval)
+    {
+      id: 'CB027', caseId: 'CASE000027', userName: 'masteruser', userId: '2575789089',
+      rrn: '1234567893', txnId: '100004', terminalId: '5690023',
+      beneMobile: '9000000008', remMobile: '9000000009',
+      createdDate: dA(1), txnDate: dA(3), adjDate: dA(1), respondByDate: dL(10),
+      mStatus: 'Retrieval Request', mSubStatus: 'Chargeback New',
+      adjType: 'Retrieval Request', remitter: 'KOTAK', beneficiary: 'FIP',
+      txnAmt: 1000, adjAmt: 1000, glNo: '354443',
+      currency: 'Rupees', reasonCode: '4808', pan: '400001*****',
+      product: 'VISA', aging: 1,
+      merchantAction: null, adminAction: null, visaPending: false,
+      timeline: [
+        { by: 'iServeU', time: dA(1) + ' 09:00 AM', title: 'Retrieval Request', remarks: 'Bank requested more info', file: null }
+      ]
+    },
+    // CB028 — New Demo Data 5 (Chargeback Won)
+    {
+      id: 'CB028', caseId: 'CASE000028', userName: 'Test@isu', userId: '11111111',
+      rrn: '1234567894', txnId: '100005', terminalId: '5690024',
+      beneMobile: '9000000010', remMobile: '9000000011',
+      createdDate: dA(15), txnDate: dA(20), adjDate: dA(15), respondByDate: dA(5),
+      mStatus: 'Chargeback Raise', mSubStatus: 'Chargeback Won',
+      adjType: 'Chargeback Raise', remitter: 'PNB', beneficiary: 'FIP',
+      txnAmt: 3000, adjAmt: 3000, glNo: '354444',
+      currency: 'Rupees', reasonCode: '4853', pan: '607001*****',
+      product: 'Rupay', aging: 15,
+      merchantAction: 'evidence', adminAction: 'considered', visaPending: false,
+      resolution: 'Won',
+      timeline: [
+        { by: 'iServeU', time: dA(5) + ' 10:00 AM', title: 'NPCI Ruled — Dispute Won', remarks: 'Merchant vindicated.', file: null }
+      ]
+    },
+    // CB029 — VISA · Fraud · Lost
+    {
+      id: 'CB029', caseId: 'CASE000029', userName: 'masteruser', userId: '2575789089',
+      rrn: '5678901234', txnId: '200001', terminalId: '5690025',
+      beneMobile: '9800001001', remMobile: '9700001001',
+      createdDate: dA(22), txnDate: dA(26), adjDate: dA(22), respondByDate: dA(12),
+      mStatus: 'Fraud Chargeback Raise', mSubStatus: 'Chargeback Lost',
+      adjType: 'Fraud Chargeback Raise', remitter: 'HDFC', beneficiary: 'FIP',
+      txnAmt: 18500, adjAmt: 18500, glNo: '354445',
+      currency: 'Rupees', reasonCode: '4863', pan: '400001*****',
+      product: 'VISA', aging: 22,
+      merchantAction: 'rejected', adminAction: 'declined', visaPending: false,
+      rejectReason: 'Customer provided OTP log. Fraud confirmed by Visa fraud detection team.',
+      timeline: [
+        { by: 'iServeU', time: dA(22) + ' 07:00 AM', title: 'Fraud Chargeback Raised', remarks: 'High-value fraud alert: Rs.18,500 disputed. Lien placed.', file: null },
+        { by: 'masteruser', time: dA(20) + ' 11:00 AM', title: 'Evidence Submitted', remarks: 'POS terminal log and CCTV timestamp shared', file: 'FraudEvidence_CB029.pdf' },
+        { by: 'Krishna Das', time: dA(15) + ' 03:30 PM', title: 'Admin Reviewed — Declined', remarks: 'Evidence insufficient. Visa fraud team confirmed unauthorized access.', file: 'VisaFraudRuling.pdf' },
+        { by: 'iServeU', time: dA(12) + ' 09:00 AM', title: 'Case Closed — Chargeback Lost', remarks: 'Merchant wallet debited Rs.18,500 in favour of cardholder.', file: null }
+      ]
+    },
+    // CB030 — Rupay · Retrieval Request
+    {
+      id: 'CB030', caseId: 'CASE000030', userName: 'masteruser', userId: '2575789089',
+      rrn: '6789012345', txnId: '200002', terminalId: '5690026',
+      beneMobile: '9800002002', remMobile: '9700002002',
+      createdDate: dA(3), txnDate: dA(6), adjDate: dA(3), respondByDate: dL(8),
+      mStatus: 'Retrieval Request', mSubStatus: 'Chargeback New',
+      adjType: 'Retrieval Request', remitter: 'BOI', beneficiary: 'FIP',
+      txnAmt: 2300, adjAmt: 2300, glNo: '354446',
+      currency: 'Rupees', reasonCode: '4808', pan: '607002*****',
+      product: 'Rupay', aging: 3,
+      merchantAction: null, adminAction: null, visaPending: false,
+      timeline: [
+        { by: 'iServeU', time: dA(3) + ' 10:00 AM', title: 'Rupay Retrieval Request', remarks: 'NPCI has requested transaction records for Rs.2,300. Merchant must respond within 8 days.', file: null }
+      ]
+    },
+    // CB031 — Mastercard · Pre-Arb · Won
+    {
+      id: 'CB031', caseId: 'CASE000031', userName: 'masteruser', userId: '2575789089',
+      rrn: '7890123456', txnId: '200003', terminalId: '5690027',
+      beneMobile: '9800003003', remMobile: '9700003003',
+      createdDate: dA(30), txnDate: dA(35), adjDate: dA(30), respondByDate: dA(20),
+      mStatus: 'Pre-Arbitration Raise', mSubStatus: 'Chargeback Won',
+      adjType: 'Pre-Arbitration Raise', remitter: 'AXIS', beneficiary: 'FIP',
+      txnAmt: 11200, adjAmt: 11200, glNo: '354447',
+      currency: 'Rupees', reasonCode: '4853', pan: '512300*****',
+      product: 'Mastercard', aging: 30,
+      merchantAction: 'rejected', adminAction: 'considered', visaPending: false,
+      rejectReason: 'Merchant provided signed delivery receipt and GPS coordinates. Service fully rendered.',
+      timeline: [
+        { by: 'iServeU', time: dA(30) + ' 09:00 AM', title: 'Pre-Arbitration Raised by Mastercard', remarks: 'Customer escalated after initial denial', file: null },
+        { by: 'masteruser', time: dA(28) + ' 02:00 PM', title: 'Evidence Submitted — Pre-Arb', remarks: 'Signed delivery receipt + GPS proof + call recording', file: 'PreArb_Evidence_CB031.pdf' },
+        { by: 'Krishna Das', time: dA(24) + ' 04:00 PM', title: 'Admin Considered — Sent to Mastercard', remarks: 'Strong evidence. Represented to Mastercard.', file: null },
+        { by: 'iServeU', time: dA(20) + ' 10:00 AM', title: 'Mastercard Ruled — Dispute Won', remarks: 'Pre-Arb Won. Lien released. Merchant wallet restored.', file: 'MastercardRuling.pdf' }
+      ]
+    },
+    // CB032 — VISA · Deferred CB · In Progress
+    {
+      id: 'CB032', caseId: 'CASE000032', userName: 'masteruser', userId: '2575789089',
+      rrn: '8901234567', txnId: '200004', terminalId: '5690028',
+      beneMobile: '9800004004', remMobile: '9700004004',
+      createdDate: dA(8), txnDate: dA(12), adjDate: dA(8), respondByDate: dL(2),
+      mStatus: 'Differed Chargeback Raise', mSubStatus: 'Chargeback in Progress',
+      adjType: 'Differed Chargeback Raise', remitter: 'YES BANK', beneficiary: 'FIP',
+      txnAmt: 4600, adjAmt: 4600, glNo: '354448',
+      currency: 'Rupees', reasonCode: '4808', pan: '416100*****',
+      product: 'VISA', aging: 8,
+      merchantAction: 'evidence', adminAction: null, visaPending: true,
+      rejectReason: 'Transaction completed. 3DS authenticated.',
+      timeline: [
+        { by: 'iServeU', time: dA(8) + ' 08:30 AM', title: 'Deferred Chargeback Raised', remarks: 'VISA returned initial CB. Resubmitted with new ARN.', file: null },
+        { by: 'masteruser', time: dA(6) + ' 01:00 PM', title: 'Evidence Submitted (Resubmission)', remarks: 'Updated ARN, 3DS auth log, merchant terminal receipt', file: 'Resubmit_CB032.pdf' }
+      ]
+    },
+    // CB033 — Rupay · New · for Test@isu merchant
+    {
+      id: 'CB033', caseId: 'CASE000033', userName: 'Test@isu', userId: '11111111',
+      rrn: '9012345678', txnId: '300001', terminalId: '5691001',
+      beneMobile: '9900001001', remMobile: '9800001001',
+      createdDate: dA(1), txnDate: dA(4), adjDate: dA(1), respondByDate: dL(9),
+      mStatus: 'Chargeback Raise', mSubStatus: 'Chargeback New',
+      adjType: 'Chargeback Raise', remitter: 'CANARA', beneficiary: 'FIP',
+      txnAmt: 3200, adjAmt: 3200, glNo: '354449',
+      currency: 'Rupees', reasonCode: '4808', pan: '607003*****',
+      product: 'Rupay', aging: 1,
+      merchantAction: null, adminAction: null, visaPending: false,
+      timeline: [
+        { by: 'iServeU', time: dA(1) + ' 09:00 AM', title: 'Rupay Chargeback Raised', remarks: 'Customer claims Rs.3200 deducted but wallet not credited', file: null }
+      ]
+    },
+    // CB034 — VISA · In Progress · for Test@isu merchant
+    {
+      id: 'CB034', caseId: 'CASE000034', userName: 'Test@isu', userId: '11111111',
+      rrn: '0123456789', txnId: '300002', terminalId: '5691002',
+      beneMobile: '9900002002', remMobile: '9800002002',
+      createdDate: dA(5), txnDate: dA(9), adjDate: dA(5), respondByDate: dL(3),
+      mStatus: 'Chargeback Raise', mSubStatus: 'Chargeback in Progress',
+      adjType: 'Chargeback Raise', remitter: 'ICICI', beneficiary: 'FIP',
+      txnAmt: 6800, adjAmt: 6800, glNo: '354450',
+      currency: 'Rupees', reasonCode: '4853', pan: '411200*****',
+      product: 'VISA', aging: 5,
+      merchantAction: 'rejected', adminAction: null, visaPending: false,
+      rejectReason: 'Product delivered on 20-May-2026 via Delhivery. AWB No: 3456781. Customer received and signed.',
+      timeline: [
+        { by: 'iServeU', time: dA(5) + ' 10:00 AM', title: 'VISA Chargeback Raised', remarks: 'Customer: goods not received despite payment', file: null },
+        { by: 'Test@isu', time: dA(3) + ' 04:00 PM', title: 'Evidence Submitted by Test@isu', remarks: 'Courier AWB and delivery confirmation uploaded', file: 'Delivery_Evidence.pdf' }
+      ]
+    },
+    // CB035 — Mastercard · Won · for Test@isu merchant
+    {
+      id: 'CB035', caseId: 'CASE000035', userName: 'Test@isu', userId: '11111111',
+      rrn: '1122334455', txnId: '300003', terminalId: '5691003',
+      beneMobile: '9900003003', remMobile: '9800003003',
+      createdDate: dA(18), txnDate: dA(22), adjDate: dA(18), respondByDate: dA(8),
+      mStatus: 'Chargeback Raise', mSubStatus: 'Chargeback Won',
+      adjType: 'Chargeback Raise', remitter: 'PNB', beneficiary: 'FIP',
+      txnAmt: 8900, adjAmt: 8900, glNo: '354451',
+      currency: 'Rupees', reasonCode: '4808', pan: '545401*****',
+      product: 'Mastercard', aging: 18,
+      merchantAction: 'rejected', adminAction: 'considered', visaPending: false,
+      rejectReason: 'Service provided. Transaction authenticated via OTP. Customer acknowledged receipt.',
+      timeline: [
+        { by: 'iServeU', time: dA(18) + ' 08:00 AM', title: 'Mastercard Dispute Raised', remarks: 'Cardholder disputes Rs.8,900 charge', file: null },
+        { by: 'Test@isu', time: dA(16) + ' 02:00 PM', title: 'Evidence Submitted', remarks: 'OTP log, 3DS auth record, and invoice', file: 'MastercardEvidence.pdf' },
+        { by: 'Krishna Das', time: dA(12) + ' 11:00 AM', title: 'Admin Considered — Sent to Mastercard', remarks: 'Evidence verified. Represented to Mastercard.', file: null },
+        { by: 'iServeU', time: dA(8) + ' 09:00 AM', title: 'Mastercard Ruled — Won', remarks: 'Dispute Won. Merchant wallet restored.', file: 'MastercardWin.pdf' }
+      ]
+    },
+    // CB036 — VISA · VROL Inquiry · for Test@isu
+    {
+      id: 'CB036', caseId: 'CASE_VROL_06', userName: 'Test@isu', userId: '11111111',
+      rrn: '2233445566', txnId: '300004', terminalId: '5691004',
+      beneMobile: '9900004004', remMobile: '9800004004',
+      createdDate: dA(4), txnDate: dA(8), adjDate: dA(4), respondByDate: dL(6),
+      mStatus: 'VROL Inquiry', mSubStatus: 'Chargeback New',
+      adjType: 'Chargeback Raise', remitter: 'SBI', beneficiary: 'FIP',
+      txnAmt: 7500, adjAmt: 7500, glNo: '354452',
+      currency: 'Rupees', reasonCode: '10.4', pan: '416200*****',
+      product: 'VISA', aging: 4,
+      merchantAction: null, adminAction: null, visaPending: true,
+      timeline: [
+        { by: 'iServeU', time: dA(4) + ' 11:00 AM', title: 'VROL Inquiry Received from Visa', remarks: 'Visa raised inquiry on Rs.7,500 transaction under reason code 10.4 (Card Absent Fraud).', file: null }
+      ]
+    },
+    // CB037 — Rupay · Lost · for Test@isu
+    {
+      id: 'CB037', caseId: 'CASE000037', userName: 'Test@isu', userId: '11111111',
+      rrn: '3344556677', txnId: '300005', terminalId: '5691005',
+      beneMobile: '9900005005', remMobile: '9800005005',
+      createdDate: dA(28), txnDate: dA(33), adjDate: dA(28), respondByDate: dA(18),
+      mStatus: 'Chargeback Raise', mSubStatus: 'Chargeback Lost',
+      adjType: 'Chargeback Raise', remitter: 'UNION', beneficiary: 'FIP',
+      txnAmt: 4100, adjAmt: 4100, glNo: '354453',
+      currency: 'Rupees', reasonCode: '4808', pan: '607004*****',
+      product: 'Rupay', aging: 28,
+      merchantAction: 'rejected', adminAction: 'declined', visaPending: false,
+      rejectReason: 'NPCI could not verify delivery date match. Ruled in favour of cardholder.',
+      timeline: [
+        { by: 'iServeU', time: dA(28) + ' 08:30 AM', title: 'Rupay Chargeback Raised', remarks: 'Customer: subscription renewed without consent', file: null },
+        { by: 'Test@isu', time: dA(26) + ' 03:00 PM', title: 'Evidence Submitted', remarks: 'T&C and renewal notification emails attached', file: 'Renewal_Evidence.pdf' },
+        { by: 'Krishna Das', time: dA(22) + ' 02:00 PM', title: 'Admin Reviewed — Declined', remarks: 'Evidence did not include cancellation refusal proof.', file: null }
+      ]
+    },
+    // CB038 — VISA · Arbitration · Pending Visa · high value
+    {
+      id: 'CB038', caseId: 'CASE000038', userName: 'masteruser', userId: '2575789089',
+      rrn: '4455667788', txnId: '400001', terminalId: '5692001',
+      beneMobile: '9100001001', remMobile: '9200001001',
+      createdDate: dA(45), txnDate: dA(50), adjDate: dA(45), respondByDate: dA(35),
+      mStatus: 'Arbitration Raise', mSubStatus: 'Pending Visa Review',
+      adjType: 'Arbitration Raise', remitter: 'HDFC', beneficiary: 'FIP',
+      txnAmt: 25000, adjAmt: 25000, glNo: '354454',
+      currency: 'Rupees', reasonCode: '10.5', pan: '416300*****',
+      product: 'VISA', aging: 45,
+      merchantAction: 'evidence', adminAction: 'considered', visaPending: true,
+      rejectReason: 'High-value transaction with complete 3DS authentication trail and signed delivery confirmation.',
+      timeline: [
+        { by: 'iServeU', time: dA(45) + ' 09:00 AM', title: 'VISA Arbitration Filed', remarks: 'After Pre-Arb failure, escalated to VISA Arbitration. Rs.25,000 at stake.', file: null },
+        { by: 'masteruser', time: dA(42) + ' 12:00 PM', title: 'Arbitration Evidence Submitted', remarks: 'Full documentation: 3DS auth, call recordings, delivery GPS, invoice pack', file: 'Arbitration_Full_Pack.pdf' },
+        { by: 'Krishna Das', time: dA(38) + ' 04:00 PM', title: 'Admin Considered — Sent to VISA', remarks: 'Comprehensive case filed with VISA Arbitration Panel.', file: null },
+        { by: 'iServeU', time: dA(35) + ' 11:00 AM', title: 'VISA Arbitration — Pending Decision', remarks: 'Awaiting VISA Arbitration Panel final ruling.', file: null }
+      ]
+    },
+    // CB039 — Mastercard · Accepted · Refund Issued
+    {
+      id: 'CB039', caseId: 'CASE000039', userName: 'masteruser', userId: '2575789089',
+      rrn: '5566778899', txnId: '400002', terminalId: '5692002',
+      beneMobile: '9100002002', remMobile: '9200002002',
+      createdDate: dA(10), txnDate: dA(14), adjDate: dA(10), respondByDate: dA(0),
+      mStatus: 'Chargeback Raise', mSubStatus: 'Refund Success',
+      adjType: 'Chargeback Raise', remitter: 'KOTAK', beneficiary: 'FIP',
+      txnAmt: 1600, adjAmt: 1600, glNo: '354455',
+      currency: 'Rupees', reasonCode: '4808', pan: '512400*****',
+      product: 'Mastercard', aging: 10,
+      merchantAction: 'accepted', adminAction: 'auto-accepted', visaPending: false,
+      timeline: [
+        { by: 'iServeU', time: dA(10) + ' 09:30 AM', title: 'Mastercard Chargeback Raised', remarks: 'Customer: wrong amount charged', file: null },
+        { by: 'masteruser', time: dA(9) + ' 11:00 AM', title: 'Merchant Accepted Dispute', remarks: 'Billing error confirmed. Merchant accepted full responsibility.', file: null },
+        { by: 'iServeU', time: dA(8) + ' 03:00 PM', title: 'Refund Processed', remarks: 'Rs.1,600 refunded to cardholder. Merchant wallet debited.', file: 'RefundReceipt.pdf' }
+      ]
+    },
+    // CB040 — VISA · New · Fresh (today)
+    {
+      id: 'CB040', caseId: 'CASE000040', userName: 'masteruser', userId: '2575789089',
+      rrn: '6677889900', txnId: '400003', terminalId: '5692003',
+      beneMobile: '9100003003', remMobile: '9200003003',
+      createdDate: dA(0), txnDate: dA(0), adjDate: dA(0), respondByDate: dL(10),
+      mStatus: 'Chargeback Raise', mSubStatus: 'Chargeback New',
+      adjType: 'Chargeback Raise', remitter: 'FEDERAL', beneficiary: 'FIP',
+      txnAmt: 9200, adjAmt: 9200, glNo: '354456',
+      currency: 'Rupees', reasonCode: '10.4', pan: '416400*****',
+      product: 'VISA', aging: 0,
+      merchantAction: null, adminAction: null, visaPending: false,
+      timeline: [
+        { by: 'iServeU', time: dA(0) + ' 10:45 AM', title: 'Fresh VISA Chargeback Received', remarks: 'New dispute received from VISA acquirer. Immediate action required within 10 days.', file: null }
+      ]
     }
   ];
 }

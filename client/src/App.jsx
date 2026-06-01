@@ -5,7 +5,18 @@ const API_URL = import.meta.env.VITE_API_URL || '/api';
 
 export default function App() {
   // Navigation: 'selector' | 'merchant' | 'admin' | 'partner'
-  const [view, setView] = useState('selector');
+  const [view, setView] = useState(() => {
+    try {
+      const storedUser = localStorage.getItem('isu_currentUser');
+      const storedView = localStorage.getItem('isu_view');
+      // Only restore non-selector views if we also have a valid stored user
+      if (storedView && storedView !== 'selector' && storedUser) {
+        JSON.parse(storedUser); // validate JSON
+        return storedView;
+      }
+    } catch { /* ignore */ }
+    return 'selector';
+  });
   
   // Theme state
   const [darkMode, setDarkMode] = useState(() => localStorage.getItem('isu_dark_mode') === 'true');
@@ -16,7 +27,16 @@ export default function App() {
   const [ledger, setLedger] = useState([]);
   
   // Active User State
-  const [currentUser, setCurrentUser] = useState(null);
+  const [currentUser, setCurrentUser] = useState(() => {
+    try {
+      const stored = localStorage.getItem('isu_currentUser');
+      return stored ? JSON.parse(stored) : null;
+    } catch {
+      localStorage.removeItem('isu_currentUser');
+      localStorage.removeItem('isu_view');
+      return null;
+    }
+  });
   
   // Toast state
   const [toastMsg, setToastMsg] = useState({ text: '', type: '' });
@@ -48,16 +68,20 @@ export default function App() {
       }
 
       const resUsers = await fetch(`${API_URL}/users`, { headers });
+      if (!resUsers.ok) throw new Error('Users fetch failed');
       const dataUsers = await resUsers.json();
-      setUsers(dataUsers);
+      if (Array.isArray(dataUsers)) setUsers(dataUsers);
 
       const resDisputes = await fetch(`${API_URL}/disputes`, { headers });
+      if (!resDisputes.ok) throw new Error('Disputes fetch failed');
       const dataDisputes = await resDisputes.json();
-      setChargebacks(dataDisputes);
+      if (Array.isArray(dataDisputes)) setChargebacks(dataDisputes);
 
-      const resLedger = await fetch(`${API_URL}/ledger`, { headers }).catch(() => ({ json: () => [] }));
-      const dataLedger = await resLedger.json();
-      setLedger(dataLedger);
+      const resLedger = await fetch(`${API_URL}/ledger`, { headers }).catch(() => null);
+      if (resLedger && resLedger.ok) {
+        const dataLedger = await resLedger.json();
+        if (Array.isArray(dataLedger)) setLedger(dataLedger);
+      }
 
       // Keep current user session synced with updated database balance
       if (currentUser && Array.isArray(dataUsers)) {
@@ -68,6 +92,7 @@ export default function App() {
       }
     } catch (err) {
       console.error("Sync failed:", err);
+      // Don't crash - keep existing data
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentUser]);
@@ -121,28 +146,44 @@ export default function App() {
   const handleLogin = (e, username, password) => {
     e.preventDefault();
     const u = users.find(x => x.username === username && x.password === password);
+    let loggedUser = null;
+    let loggedView = 'selector';
+
     if (u) {
-      setCurrentUser(u);
-      setView(u.role);
+      loggedUser = u;
+      loggedView = u.role;
       showToast(`Logged in as ${u.name} (${u.role})`);
     } else {
       // Fallback for Vercel demo if API fetch failed
       if (username === 'masteruser' && password === 'Test@2026') {
-        setCurrentUser({ username: 'masteruser', name: 'masteruser', role: 'merchant' });
-        setView('merchant');
+        loggedUser = { username: 'masteruser', name: 'masteruser', role: 'merchant' };
+        loggedView = 'merchant';
         showToast('Logged in as masteruser (Merchant)');
       } else if (username === 'Test@Ad' && password === 'Test@2027') {
-        setCurrentUser({ username: 'Test@Ad', name: 'Krishna Das', role: 'admin' });
-        setView('admin');
+        loggedUser = { username: 'Test@Ad', name: 'Krishna Das', role: 'admin' };
+        loggedView = 'admin';
         showToast('Logged in as Krishna Das (Admin)');
       } else if (username === 'partneruser' && password === 'Test@2028') {
-        setCurrentUser({ username: 'partneruser', name: 'Arjun Mehta (Partner)', role: 'partner' });
-        setView('partner');
+        loggedUser = { username: 'partneruser', name: 'Arjun Mehta (Partner)', role: 'partner' };
+        loggedView = 'partner';
         showToast('Logged in as Arjun Mehta (Partner)');
       } else {
         alert('Invalid username or password');
+        return;
       }
     }
+
+    setCurrentUser(loggedUser);
+    setView(loggedView);
+    localStorage.setItem('isu_currentUser', JSON.stringify(loggedUser));
+    localStorage.setItem('isu_view', loggedView);
+  };
+
+  const handleLogout = () => {
+    setCurrentUser(null);
+    setView('selector');
+    localStorage.removeItem('isu_currentUser');
+    localStorage.removeItem('isu_view');
   };
 
   const resetAllSessions = async () => {
@@ -160,7 +201,8 @@ export default function App() {
 
   return (
     <>
-      {view === 'selector' && (
+      {/* Safety guard: if view is not selector but currentUser is missing, show login */}
+      {(view === 'selector' || !currentUser) && (
         <LoginForm handleLogin={handleLogin} toggleTheme={toggleTheme} darkMode={darkMode} />
       )}
       
@@ -769,7 +811,7 @@ function MerchantPortal({
 
           </div>
           <div style={{ marginTop: 'auto', padding: '16px' }}>
-            <button className="btn btn-secondary btn-sm" style={{ width: '100%' }} onClick={() => setView('selector')}>
+            <button className="btn btn-secondary btn-sm" style={{ width: '100%' }} onClick={handleLogout}>
               ← Back to Portal Select
             </button>
           </div>
@@ -2680,7 +2722,7 @@ function AdminPortal({
 
           </div>
           <div style={{ marginTop: 'auto', padding: '16px' }}>
-            <button className="btn btn-secondary btn-sm" style={{ width: '100%' }} onClick={() => setView('selector')}>
+            <button className="btn btn-secondary btn-sm" style={{ width: '100%' }} onClick={handleLogout}>
               ← Back to Portal Select
             </button>
           </div>
@@ -2765,9 +2807,7 @@ function AdminPortal({
                   </div>
                   <div className="qa-card">
                     <h4>Quick Actions</h4>
-                    <button className="btn btn-primary qa-btn" onClick={() => { setSelectedProvider(''); setActivePage('a-raise-cb'); }}>
-                      📤 Raise New Chargeback (Bulk Upload)
-                    </button>
+
                     <button className="btn btn-secondary qa-btn" style={{ marginTop: '8px' }} onClick={() => { setAVcPage(1); setActivePage('a-view-cb'); }}>
                       📋 View All Chargebacks
                     </button>
@@ -2846,14 +2886,7 @@ function AdminPortal({
               </div>
               <div className="page-inner">
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', maxWidth: '700px', margin: '40px auto 24px' }}>
-                  <div 
-                    style={{ border: '1.5px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: '40px 20px', textAlign: 'center', cursor: 'pointer', background: 'var(--card)' }}
-                    onClick={() => { setSelectedProvider(''); setActivePage('a-raise-cb'); }}
-                  >
-                    <div style={{ fontSize: '40px', marginBottom: '12px' }}>📤</div>
-                    <div style={{ fontSize: '15px', fontWeight: '600' }}>Raise Chargeback</div>
-                    <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '6px' }}>Upload bulk excel/CSV disputes</p>
-                  </div>
+
                   <div 
                     style={{ border: '1.5px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: '40px 20px', textAlign: 'center', cursor: 'pointer', background: 'var(--card)' }}
                     onClick={() => { setAVcPage(1); setActivePage('a-view-cb'); }}
@@ -2867,88 +2900,7 @@ function AdminPortal({
             </div>
           )}
 
-          {/* Admin Raise Chargeback */}
-          {activePage === 'a-raise-cb' && (
-            <div className="page active" id="a-raise-cb">
-              <div className="view-chargeback-header">
-                <span className="vc-breadcrumb">Dispute Management / Chargeback / <span>Raise Chargeback</span></span>
-              </div>
-              <div className="page-inner">
-                <div className="upload-hero">
-                  <button className="back-btn" onClick={() => setActivePage('a-chargeback')}>←</button>
-                  <h2>Bulk Upload Chargebacks</h2>
-                </div>
-                
-                {!selectedProvider ? (
-                  <div id="providerStep">
-                    <div style={{ fontSize: '15px', fontWeight: '600', marginBottom: '16px' }}>Select Card Scheme / Payment System:</div>
-                    <div className="provider-cards">
-                                            <div className="provider-card" onClick={() => selectProvider('VISA')}>VISA</div>
-                      <div className="provider-card" onClick={() => selectProvider('Mastercard')}>Mastercard</div>
-                      <div className="provider-card" onClick={() => selectProvider('Rupay')}>Rupay</div>
-                    </div>
-                  </div>
-                ) : (
-                  <div id="uploadStep">
-                    <div className="upload-section">
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
-                        <div style={{ fontSize: '14px', fontWeight: '600' }}>Selected Provider: <span style={{ color: 'var(--brand)' }}>{selectedProvider}</span></div>
-                        <button className="btn btn-secondary btn-sm" onClick={changeProvider}>Change Provider</button>
-                      </div>
 
-                      {!uploadResult ? (
-                        <div id="uploadZoneWrap">
-                          <div className="upload-box" onClick={() => document.getElementById('cbFile').click()}>
-                            <div className="ub-icon">📊</div>
-                            <h3>Upload Chargeback CSV File</h3>
-                            <p>Click to browse or drag &amp; drop here</p>
-                            <p style={{ fontSize: '11px', color: 'var(--text-light)', marginTop: '6px' }}>CSV format only · Max 100MB · Up to 5000 records</p>
-                          </div>
-                          <input type="file" id="cbFile" accept=".csv" style={{ display: 'none' }} onChange={handleFileSelect} />
-                          
-                          {bulkFileName && (
-                            <div className="uploaded-file">
-                              <span>📄 {bulkFileName}</span>
-                              <button style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--brand)' }} onClick={handleClearFile}>✕</button>
-                            </div>
-                          )}
-
-                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '16px' }}>
-                            <span onClick={downloadSampleTemplate} style={{ color: 'var(--brand)', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}>
-                              ⬇ Download Sample File Template
-                            </span>
-                            <div style={{ display: 'flex', gap: '10px' }}>
-                              <button className="btn btn-secondary" onClick={handleClearFile}>Cancel</button>
-                              {bulkFileName && <button className="btn btn-primary" onClick={handleBulkUploadSubmit}>Upload File</button>}
-                            </div>
-                          </div>
-                        </div>
-                      ) : (
-                        <div id="uploadResult">
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '20px', padding: '16px', background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 'var(--radius)' }}>
-                            <span style={{ fontSize: '32px' }}>✅</span>
-                            <div>
-                              <div style={{ fontSize: '16px', fontWeight: '700', color: '#15803d' }}>File Processed Successfully!</div>
-                              <div style={{ fontSize: '13px', color: 'var(--text-muted)' }}>Dispute records populated in database.</div>
-                            </div>
-                          </div>
-                          <div className="upload-result-grid">
-                            <div className="url-item total"><div className="urv">{uploadResult.total}</div><div className="url">Total Records</div></div>
-                            <div className="url-item success"><div className="urv">{uploadResult.success}</div><div className="url">Processed Successfully</div></div>
-                            <div className="url-item fail"><div className="urv">{uploadResult.fail}</div><div className="url">Failed</div></div>
-                          </div>
-                          <div style={{ display: 'flex', gap: '10px', marginTop: '16px' }}>
-                            <button className="btn btn-primary" onClick={downloadSampleTemplate}>⬇ Download Template</button>
-                            <button className="btn btn-secondary" onClick={handleResetUpload}>Upload Another File</button>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
 
           {/* Admin View Chargebacks */}
           {activePage === 'a-view-cb' && (
@@ -3162,7 +3114,7 @@ function AdminPortal({
                     </div>
                     <div>
                       <div style={{ fontSize: '12px', fontWeight: '700', color: '#b0bec5', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '4px' }}>TOTAL RECEIVED FEED</div>
-                      <div style={{ fontSize: '24px', fontWeight: '700', color: '#263238' }}>6 <span style={{fontSize: '16px', fontWeight: '600'}}>Events</span></div>
+                      <div style={{ fontSize: '24px', fontWeight: '700', color: '#263238' }}>12 <span style={{fontSize: '16px', fontWeight: '600'}}>Events</span></div>
                     </div>
                   </div>
 
@@ -3302,6 +3254,126 @@ function AdminPortal({
                           </button>
                         </td>
                       </tr>
+                      <tr style={{ borderBottom: '1px solid #f5f5f5' }}>
+                        <td style={{ padding: '16px 24px', fontSize: '13px', fontWeight: '600', color: '#263238' }}>WH-VISA-551033</td>
+                        <td style={{ padding: '16px 24px' }}>
+                          <div style={{ fontSize: '13px', fontWeight: '600', color: '#546e7a', marginBottom: '4px' }}>FraudAlertNotificati...</div>
+                          <div style={{ fontSize: '11px', color: '#b0bec5' }}>2026-05-28 08:30:01</div>
+                        </td>
+                        <td style={{ padding: '16px 24px' }}>
+                          <span style={{ padding: '6px 12px', borderRadius: '4px', fontSize: '11px', fontWeight: '700', background: '#ffebee', color: '#c62828' }}>Fraud Alert</span>
+                        </td>
+                        <td style={{ padding: '16px 24px' }}>
+                          <div style={{ fontSize: '13px', fontWeight: '600', color: '#546e7a', marginBottom: '4px' }}>masteruser</div>
+                          <div style={{ fontSize: '12px', color: '#78909c' }}>INR 18,500</div>
+                        </td>
+                        <td style={{ padding: '16px 24px', fontSize: '12px', fontWeight: '700', color: '#4caf50' }}>200 OK</td>
+                        <td style={{ padding: '16px 24px', textAlign: 'right' }}>
+                          <button style={{ padding: '6px 16px', background: '#1a237e', color: '#fff', border: 'none', borderRadius: '4px', fontSize: '11px', fontWeight: '700', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                            <span>&gt;_</span> INSPECT
+                          </button>
+                        </td>
+                      </tr>
+                      <tr style={{ borderBottom: '1px solid #f5f5f5' }}>
+                        <td style={{ padding: '16px 24px', fontSize: '13px', fontWeight: '600', color: '#263238' }}>WH-VISA-551034</td>
+                        <td style={{ padding: '16px 24px' }}>
+                          <div style={{ fontSize: '13px', fontWeight: '600', color: '#546e7a', marginBottom: '4px' }}>DisputeResolvedEvent</div>
+                          <div style={{ fontSize: '11px', color: '#b0bec5' }}>2026-05-27 14:22:11</div>
+                        </td>
+                        <td style={{ padding: '16px 24px' }}>
+                          <span style={{ padding: '6px 12px', borderRadius: '4px', fontSize: '11px', fontWeight: '700', background: '#e8f5e9', color: '#2e7d32' }}>Won</span>
+                        </td>
+                        <td style={{ padding: '16px 24px' }}>
+                          <div style={{ fontSize: '13px', fontWeight: '600', color: '#546e7a', marginBottom: '4px' }}>Zomato Services</div>
+                          <div style={{ fontSize: '12px', color: '#78909c' }}>INR 6,200</div>
+                        </td>
+                        <td style={{ padding: '16px 24px', fontSize: '12px', fontWeight: '700', color: '#4caf50' }}>201 OK</td>
+                        <td style={{ padding: '16px 24px', textAlign: 'right' }}>
+                          <button style={{ padding: '6px 16px', background: '#1a237e', color: '#fff', border: 'none', borderRadius: '4px', fontSize: '11px', fontWeight: '700', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                            <span>&gt;_</span> INSPECT
+                          </button>
+                        </td>
+                      </tr>
+                      <tr style={{ borderBottom: '1px solid #f5f5f5' }}>
+                        <td style={{ padding: '16px 24px', fontSize: '13px', fontWeight: '600', color: '#263238' }}>WH-VISA-551035</td>
+                        <td style={{ padding: '16px 24px' }}>
+                          <div style={{ fontSize: '13px', fontWeight: '600', color: '#546e7a', marginBottom: '4px' }}>ArbitrationOutcomeFil...</div>
+                          <div style={{ fontSize: '11px', color: '#b0bec5' }}>2026-05-26 16:45:09</div>
+                        </td>
+                        <td style={{ padding: '16px 24px' }}>
+                          <span style={{ padding: '6px 12px', borderRadius: '4px', fontSize: '11px', fontWeight: '700', background: '#f3e5f5', color: '#8e24aa' }}>Arbitration</span>
+                        </td>
+                        <td style={{ padding: '16px 24px' }}>
+                          <div style={{ fontSize: '13px', fontWeight: '600', color: '#546e7a', marginBottom: '4px' }}>masteruser</div>
+                          <div style={{ fontSize: '12px', color: '#78909c' }}>INR 25,000</div>
+                        </td>
+                        <td style={{ padding: '16px 24px', fontSize: '12px', fontWeight: '700', color: '#ff9800' }}>⚠️ 408 Timeout</td>
+                        <td style={{ padding: '16px 24px', textAlign: 'right' }}>
+                          <button style={{ padding: '6px 16px', background: '#1a237e', color: '#fff', border: 'none', borderRadius: '4px', fontSize: '11px', fontWeight: '700', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                            <span>&gt;_</span> INSPECT
+                          </button>
+                        </td>
+                      </tr>
+                      <tr style={{ borderBottom: '1px solid #f5f5f5' }}>
+                        <td style={{ padding: '16px 24px', fontSize: '13px', fontWeight: '600', color: '#263238' }}>WH-VISA-551036</td>
+                        <td style={{ padding: '16px 24px' }}>
+                          <div style={{ fontSize: '13px', fontWeight: '600', color: '#546e7a', marginBottom: '4px' }}>PreArbitrationRespDue...</div>
+                          <div style={{ fontSize: '11px', color: '#b0bec5' }}>2026-05-25 09:10:00</div>
+                        </td>
+                        <td style={{ padding: '16px 24px' }}>
+                          <span style={{ padding: '6px 12px', borderRadius: '4px', fontSize: '11px', fontWeight: '700', background: '#e0f7fa', color: '#00acc1' }}>Pre-Arbitration</span>
+                        </td>
+                        <td style={{ padding: '16px 24px' }}>
+                          <div style={{ fontSize: '13px', fontWeight: '600', color: '#546e7a', marginBottom: '4px' }}>Paytm Mall</div>
+                          <div style={{ fontSize: '12px', color: '#78909c' }}>INR 11,200</div>
+                        </td>
+                        <td style={{ padding: '16px 24px', fontSize: '12px', fontWeight: '700', color: '#f44336' }}>❌ 500 Error</td>
+                        <td style={{ padding: '16px 24px', textAlign: 'right' }}>
+                          <button style={{ padding: '6px 16px', background: '#1a237e', color: '#fff', border: 'none', borderRadius: '4px', fontSize: '11px', fontWeight: '700', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                            <span>&gt;_</span> INSPECT
+                          </button>
+                        </td>
+                      </tr>
+                      <tr style={{ borderBottom: '1px solid #f5f5f5' }}>
+                        <td style={{ padding: '16px 24px', fontSize: '13px', fontWeight: '600', color: '#263238' }}>WH-VISA-551037</td>
+                        <td style={{ padding: '16px 24px' }}>
+                          <div style={{ fontSize: '13px', fontWeight: '600', color: '#546e7a', marginBottom: '4px' }}>VROLInquiryReceived...</div>
+                          <div style={{ fontSize: '11px', color: '#b0bec5' }}>2026-05-24 11:00:44</div>
+                        </td>
+                        <td style={{ padding: '16px 24px' }}>
+                          <span style={{ padding: '6px 12px', borderRadius: '4px', fontSize: '11px', fontWeight: '700', background: '#fff3e0', color: '#f57c00' }}>VROL Inquiry</span>
+                        </td>
+                        <td style={{ padding: '16px 24px' }}>
+                          <div style={{ fontSize: '13px', fontWeight: '600', color: '#546e7a', marginBottom: '4px' }}>Test@isu</div>
+                          <div style={{ fontSize: '12px', color: '#78909c' }}>INR 7,500</div>
+                        </td>
+                        <td style={{ padding: '16px 24px', fontSize: '12px', fontWeight: '700', color: '#4caf50' }}>200 OK</td>
+                        <td style={{ padding: '16px 24px', textAlign: 'right' }}>
+                          <button style={{ padding: '6px 16px', background: '#1a237e', color: '#fff', border: 'none', borderRadius: '4px', fontSize: '11px', fontWeight: '700', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                            <span>&gt;_</span> INSPECT
+                          </button>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style={{ padding: '16px 24px', fontSize: '13px', fontWeight: '600', color: '#263238' }}>WH-VISA-551038</td>
+                        <td style={{ padding: '16px 24px' }}>
+                          <div style={{ fontSize: '13px', fontWeight: '600', color: '#546e7a', marginBottom: '4px' }}>DisputeStatusUpdate...</div>
+                          <div style={{ fontSize: '11px', color: '#b0bec5' }}>2026-06-01 07:00:12</div>
+                        </td>
+                        <td style={{ padding: '16px 24px' }}>
+                          <span style={{ padding: '6px 12px', borderRadius: '4px', fontSize: '11px', fontWeight: '700', background: '#e0f2f1', color: '#00897b' }}>Status Update</span>
+                        </td>
+                        <td style={{ padding: '16px 24px' }}>
+                          <div style={{ fontSize: '13px', fontWeight: '600', color: '#546e7a', marginBottom: '4px' }}>Myntra Fashion</div>
+                          <div style={{ fontSize: '12px', color: '#78909c' }}>INR 9,200</div>
+                        </td>
+                        <td style={{ padding: '16px 24px', fontSize: '12px', fontWeight: '700', color: '#4caf50' }}>200 OK</td>
+                        <td style={{ padding: '16px 24px', textAlign: 'right' }}>
+                          <button style={{ padding: '6px 16px', background: '#1a237e', color: '#fff', border: 'none', borderRadius: '4px', fontSize: '11px', fontWeight: '700', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                            <span>&gt;_</span> INSPECT
+                          </button>
+                        </td>
+                      </tr>
                     </tbody>
                   </table>
                 </div>
@@ -3315,23 +3387,81 @@ function AdminPortal({
           {activePage === 'a-merchant' && (
             <div className="page active">
               <div className="page-inner">
-                <h3 style={{ fontSize: '20px', fontWeight: '700', marginBottom: '20px' }}>Merchant Management</h3>
-                <div className="table-responsive">
-                  <table className="data-table">
-                    <thead><tr><th>Merchant Name</th><th>Status</th><th>Actions</th></tr></thead>
-                    <tbody>
-                      {users.filter(u => u.role === 'merchant').map(m => (
-                        <tr key={m.username}>
-                          <td>{m.name}</td>
-                          <td><span className="badge badge-won">Active</span></td>
-                          <td>
-                            <button className="btn btn-warning btn-sm" style={{marginRight: '8px'}} onClick={() => showToast('Merchant Suspended')}>Suspend</button>
-                            <button className="btn btn-primary btn-sm" onClick={() => showToast('Alert Sent to Merchant')}>Alert Merchant</button>
-                          </td>
+                <div className="page-hdr">
+                  <div>
+                    <h3 style={{ fontSize: '20px', fontWeight: '700', margin: 0 }}>Merchant Management</h3>
+                    <p style={{ color: 'var(--text-muted)', fontSize: '13px', margin: '4px 0 0' }}>Manage merchant accounts, compliance status, and dispute activity</p>
+                  </div>
+                  <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                    <span style={{ fontSize: '12px', fontWeight: '700', color: 'var(--green)' }}>{users.filter(u => u.role === 'merchant').length} Active Merchants</span>
+                  </div>
+                </div>
+                <div className="tbl-card">
+                  <div className="tbl-wrap">
+                    <table>
+                      <thead>
+                        <tr>
+                          <th>Merchant Name</th>
+                          <th>Username</th>
+                          <th>Wallet Balance</th>
+                          <th>Role</th>
+                          <th>Disputes</th>
+                          <th>Open</th>
+                          <th>Won</th>
+                          <th>Status</th>
+                          <th>Actions</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                      </thead>
+                      <tbody>
+                        {users.filter(u => u.role === 'merchant').map(m => {
+                          const mDisputes = chargebacks.filter(c => c.userName === m.username);
+                          const openD = mDisputes.filter(c => !c.mSubStatus.includes('Won') && !c.mSubStatus.includes('Lost') && !c.mSubStatus.includes('Success')).length;
+                          const wonD = mDisputes.filter(c => c.mSubStatus.includes('Won') || c.mSubStatus.includes('Success')).length;
+                          return (
+                            <tr key={m.username}>
+                              <td style={{ fontWeight: '600' }}>{m.name}</td>
+                              <td className="mono" style={{ fontSize: '12px' }}>{m.username}</td>
+                              <td><strong>{formatINR(m.walletBalance)}</strong></td>
+                              <td><span className="badge badge-new" style={{ textTransform: 'capitalize' }}>{m.role}</span></td>
+                              <td style={{ fontWeight: '600' }}>{mDisputes.length}</td>
+                              <td><span style={{ color: openD > 3 ? 'var(--red)' : 'var(--yellow)', fontWeight: '600' }}>{openD}</span></td>
+                              <td><span style={{ color: 'var(--green)', fontWeight: '600' }}>{wonD}</span></td>
+                              <td><span className="badge badge-won">Active</span></td>
+                              <td>
+                                <button className="btn btn-warning btn-sm" style={{marginRight: '8px'}} onClick={() => showToast(`Merchant ${m.name} suspended`, 'warning')}>Suspend</button>
+                                <button className="btn btn-primary btn-sm" onClick={() => showToast(`Alert sent to ${m.name}`, 'success')}>Alert</button>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                        {/* Additional demo merchant records */}
+                        {[
+                          { name: 'Reliance Retail', username: 'reliance_retail', wallet: 1250000, disputes: 48, open: 12, won: 31 },
+                          { name: 'Flipkart India', username: 'flipkart_in', wallet: 875000, disputes: 127, open: 38, won: 72 },
+                          { name: 'Myntra Fashion', username: 'myntra_f', wallet: 650000, disputes: 64, open: 18, won: 40 },
+                          { name: 'Zomato Services', username: 'zomato_svc', wallet: 420000, disputes: 33, open: 8, won: 22 },
+                          { name: 'Swiggy Instamart', username: 'swiggy_im', wallet: 380000, disputes: 29, open: 6, won: 18 },
+                          { name: 'Ola Electric', username: 'ola_elec', wallet: 290000, disputes: 15, open: 4, won: 9 },
+                          { name: 'Paytm Mall', username: 'paytm_mall', wallet: 510000, disputes: 89, open: 27, won: 51 },
+                        ].map((dm, i) => (
+                          <tr key={`dm-${i}`} style={{ opacity: 0.8 }}>
+                            <td style={{ fontWeight: '600' }}>{dm.name}</td>
+                            <td className="mono" style={{ fontSize: '12px' }}>{dm.username}</td>
+                            <td><strong>{formatINR(dm.wallet)}</strong></td>
+                            <td><span className="badge badge-new">merchant</span></td>
+                            <td style={{ fontWeight: '600' }}>{dm.disputes}</td>
+                            <td><span style={{ color: dm.open > 20 ? 'var(--red)' : 'var(--yellow)', fontWeight: '600' }}>{dm.open}</span></td>
+                            <td><span style={{ color: 'var(--green)', fontWeight: '600' }}>{dm.won}</span></td>
+                            <td><span className="badge badge-won">Active</span></td>
+                            <td>
+                              <button className="btn btn-warning btn-sm" style={{marginRight: '8px'}} onClick={() => showToast(`Merchant ${dm.name} suspended`, 'warning')}>Suspend</button>
+                              <button className="btn btn-primary btn-sm" onClick={() => showToast(`Alert sent to ${dm.name}`, 'success')}>Alert</button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
               </div>
             </div>
@@ -3674,7 +3804,7 @@ function PartnerPortal({
 
           </div>
           <div style={{ marginTop: 'auto', padding: '16px' }}>
-            <button className="btn btn-secondary btn-sm" style={{ width: '100%' }} onClick={() => setView('selector')}>
+            <button className="btn btn-secondary btn-sm" style={{ width: '100%' }} onClick={handleLogout}>
               ← Back to Portal Select
             </button>
           </div>
@@ -3959,26 +4089,37 @@ function PartnerPortal({
                 <h3 style={{ fontSize: '20px', fontWeight: '700', marginBottom: '20px' }}>Merchant Portfolio Controls</h3>
                 <div className="table-responsive">
                   <table className="data-table">
-                    <thead><tr><th>Merchant Name</th><th>VAMP Ratio</th><th>Disputes</th><th>Actions</th></tr></thead>
+                    <thead><tr><th>Merchant Name</th><th>Username</th><th>Disputes</th><th>Open</th><th>Won</th><th>Lost</th><th>VAMP Ratio</th><th>Risk Level</th><th>Actions</th></tr></thead>
                     <tbody>
-                      <tr>
-                        <td>Myntra India</td>
-                        <td style={{color: 'green'}}>1.1%</td>
-                        <td>45</td>
-                        <td>
-                          <button className="btn btn-sm btn-outline" style={{marginRight: '8px'}} onClick={() => showToast('Tier changed')}>Change Tier</button>
-                          <button className="btn btn-sm btn-warning" onClick={() => showToast('Merchant suspended')}>Suspend</button>
-                        </td>
-                      </tr>
-                      <tr>
-                        <td>Flipkart Retail</td>
-                        <td style={{color: 'red', fontWeight: 'bold'}}>2.5%</td>
-                        <td>120</td>
-                        <td>
-                          <button className="btn btn-sm btn-outline" style={{marginRight: '8px'}} onClick={() => showToast('Tier changed')}>Change Tier</button>
-                          <button className="btn btn-sm btn-warning" onClick={() => showToast('Merchant suspended')}>Suspend</button>
-                        </td>
-                      </tr>
+                      {[
+                        { name: 'masteruser', username: 'masteruser', d: 35, o: 8, w: 18, l: 5, vamp: '0.9%', risk: 'low' },
+                        { name: 'Myntra India', username: 'myntra_in', d: 64, o: 18, w: 40, l: 6, vamp: '1.1%', risk: 'low' },
+                        { name: 'Flipkart Retail', username: 'flipkart_re', d: 127, o: 38, w: 72, l: 17, vamp: '2.5%', risk: 'high' },
+                        { name: 'Zomato Services', username: 'zomato_svc', d: 33, o: 8, w: 22, l: 3, vamp: '0.7%', risk: 'low' },
+                        { name: 'Paytm Mall', username: 'paytm_mall', d: 89, o: 27, w: 51, l: 11, vamp: '1.8%', risk: 'medium' },
+                        { name: 'Swiggy Instamart', username: 'swiggy_im', d: 29, o: 6, w: 18, l: 5, vamp: '0.8%', risk: 'low' },
+                        { name: 'Ola Electric', username: 'ola_elec', d: 15, o: 4, w: 9, l: 2, vamp: '0.6%', risk: 'low' },
+                        { name: 'Reliance Digital', username: 'reliance_dg', d: 48, o: 12, w: 31, l: 5, vamp: '1.3%', risk: 'medium' },
+                      ].map((m, i) => (
+                        <tr key={i}>
+                          <td style={{ fontWeight: '600' }}>{m.name}</td>
+                          <td className="mono" style={{ fontSize: '11px' }}>{m.username}</td>
+                          <td>{m.d}</td>
+                          <td><span style={{ color: m.o > 20 ? 'var(--red)' : 'var(--yellow)', fontWeight: '600' }}>{m.o}</span></td>
+                          <td><span style={{ color: 'var(--green)', fontWeight: '600' }}>{m.w}</span></td>
+                          <td><span style={{ color: 'var(--red)', fontWeight: '600' }}>{m.l}</span></td>
+                          <td style={{ color: m.risk === 'high' ? 'var(--red)' : m.risk === 'medium' ? 'var(--yellow)' : 'var(--green)', fontWeight: 'bold' }}>{m.vamp}</td>
+                          <td>
+                            <span className={`badge ${m.risk === 'high' ? 'badge-lost' : m.risk === 'medium' ? 'badge-progress' : 'badge-won'}`}>
+                              {m.risk === 'high' ? '🔴 High' : m.risk === 'medium' ? '🟡 Medium' : '🟢 Low'}
+                            </span>
+                          </td>
+                          <td>
+                            <button className="btn btn-sm btn-outline" style={{marginRight: '8px'}} onClick={() => showToast(`Tier updated for ${m.name}`)}>Change Tier</button>
+                            <button className="btn btn-sm btn-warning" onClick={() => showToast(`${m.name} suspended`, 'warning')}>Suspend</button>
+                          </td>
+                        </tr>
+                      ))}
                     </tbody>
                   </table>
                 </div>
