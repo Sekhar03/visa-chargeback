@@ -4329,6 +4329,103 @@ function PartnerPortal({
           )}
 
 
+          {/* Partner Dispute Details Modal */}
+          {activeModal === 'disputeDetails' && (
+            <div className="overlay open">
+              {(() => {
+                const cb = chargebacks.find(c => c.id === targetDisputeId) || {};
+                return (
+                  <div className="modal" style={{ width: '90%', maxWidth: '1100px', padding: '0', borderRadius: '4px', overflow: 'hidden', fontFamily: 'Arial, sans-serif', display: 'flex', flexDirection: 'column', maxHeight: '90vh' }}>
+                    <div style={{ padding: '12px 20px', borderBottom: '1px solid #e0e0e0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0 }}>
+                      <h2 style={{ fontSize: '14px', fontWeight: 'bold', margin: 0, color: '#000' }}>{cb.id}</h2>
+                      <button onClick={() => setActiveModal(null)} style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#9e9e9e' }}>&times;</button>
+                    </div>
+                    
+                    <div style={{ padding: '0', overflowY: 'auto', flex: 1 }}>
+                      {/* Original Transaction Details */}
+                      <div style={{ padding: '12px 20px', background: '#fff', borderBottom: '1px solid #eee', fontWeight: 'bold', fontSize: '13px', display: 'flex', justifyContent: 'space-between', color: '#000' }}>
+                        <span>Original Transaction Details</span>
+                        <span style={{ fontWeight: 'normal', color: '#757575' }}>Transaction Date & Time <span style={{color:'red'}}>*</span> : <span style={{color:'#333', fontWeight:'bold'}}>{formatDateDisp(cb.txnDate)}</span></span>
+                      </div>
+                      
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px', padding: '20px', fontSize: '12px', background: '#fff' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}><span style={{ color: '#9e9e9e' }}>Ticket ID <span style={{color:'red'}}>*</span> :</span> <strong style={{color: '#000', width: '140px'}}>{cb.id}</strong></div>
+                          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}><span style={{ color: '#9e9e9e' }}>AR Number <span style={{color:'red'}}>*</span> :</span> <strong style={{color: '#000', width: '140px'}}>{cb.rrn}</strong></div>
+                          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}><span style={{ color: '#9e9e9e' }}>RR Number <span style={{color:'red'}}>*</span> :</span> <strong style={{color: '#000', width: '140px'}}>{cb.rrn}</strong></div>
+                          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}><span style={{ color: '#9e9e9e' }}>Txn Currency <span style={{color:'red'}}>*</span> :</span> <strong style={{color: '#000', width: '140px'}}>INR</strong></div>
+                          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}><span style={{ color: '#9e9e9e' }}>Location <span style={{color:'red'}}>*</span> :</span> <strong style={{color: '#000', width: '140px'}}>India</strong></div>
+                          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}><span style={{ color: '#9e9e9e' }}>Country <span style={{color:'red'}}>*</span> :</span> <strong style={{color: '#000', width: '140px'}}>India</strong></div>
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}><span style={{ color: '#9e9e9e' }}>Transaction Ref. Number <span style={{color:'red'}}>*</span> :</span> <strong style={{color: '#000', width: '140px'}}>{cb.txnId}</strong></div>
+                          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}><span style={{ color: '#9e9e9e' }}>MID <span style={{color:'red'}}>*</span> :</span> <strong style={{color: '#000', width: '140px'}}>{cb.userId}</strong></div>
+                          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}><span style={{ color: '#9e9e9e' }}>Card Number <span style={{color:'red'}}>*</span> :</span> <strong style={{color: '#000', width: '140px'}}>457704******3989</strong></div>
+                          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}><span style={{ color: '#9e9e9e' }}>Amount <span style={{color:'red'}}>*</span> :</span> <strong style={{color: '#000', width: '140px'}}>{cb.txnAmt}</strong></div>
+                          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}><span style={{ color: '#9e9e9e' }}>City <span style={{color:'red'}}>*</span> :</span> <strong style={{color: '#000', width: '140px'}}>-</strong></div>
+                          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}><span style={{ color: '#9e9e9e' }}>Zip code <span style={{color:'red'}}>*</span> :</span> <strong style={{color: '#000', width: '140px'}}>-</strong></div>
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}><span style={{ color: '#9e9e9e' }}>Merchant Name <span style={{color:'red'}}>*</span> :</span> <strong style={{color: '#000', width: '140px'}}>{cb.userName}</strong></div>
+                          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}><span style={{ color: '#9e9e9e' }}>TID <span style={{color:'red'}}>*</span> :</span> <strong style={{color: '#000', width: '140px'}}>10515104</strong></div>
+                          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}><span style={{ color: '#9e9e9e' }}>Approval Code <span style={{color:'red'}}>*</span> :</span> <strong style={{color: '#000', width: '140px'}}>021838</strong></div>
+                          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}><span style={{ color: '#9e9e9e' }}>Address <span style={{color:'red'}}>*</span> :</span> <strong style={{color: '#000', width: '140px'}}>-</strong></div>
+                          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}><span style={{ color: '#9e9e9e' }}>State <span style={{color:'red'}}>*</span> :</span> <strong style={{color: '#000', width: '140px'}}>-</strong></div>
+                          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}><span style={{ color: '#9e9e9e' }}>Request ID <span style={{color:'red'}}>*</span> :</span> <strong style={{color: '#000', width: '140px'}}>-</strong></div>
+                        </div>
+                      </div>
+                      
+                      {/* Dispute Details */}
+                      <div style={{ padding: '12px 20px', background: '#fff', borderTop: '1px solid #eee', borderBottom: '1px solid #eee', fontWeight: 'bold', fontSize: '13px', display: 'flex', justifyContent: 'space-between', color: '#000' }}>
+                        <span>Dispute Details</span>
+                        <span style={{ fontWeight: 'normal', color: '#757575' }}>Dispute Date <span style={{color:'red'}}>*</span> : <span style={{color:'#333', fontWeight:'bold'}}>{formatDateDisp(cb.txnDate)}</span></span>
+                      </div>
+                      
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px', padding: '20px', fontSize: '12px', background: '#fff' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}><span style={{ color: '#9e9e9e' }}>Scheme <span style={{color:'red'}}>*</span> :</span> <strong style={{color: '#000', width: '140px'}}>{cb.product || 'VISA'}</strong></div>
+                          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}><span style={{ color: '#9e9e9e' }}>Dispute Reason Code <span style={{color:'red'}}>*</span> :</span> <strong style={{color: '#000', width: '140px'}}>{cb.reasonCode || '13.1'}</strong></div>
+                          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '16px' }}><span style={{ color: '#9e9e9e' }}>Source Currency Code (Alpha) <span style={{color:'red'}}>*</span> :</span> <strong style={{color: '#000', width: '140px'}}>INR</strong></div>
+                          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}><span style={{ color: '#9e9e9e' }}>Destination Amount <span style={{color:'red'}}>*</span> :</span> <strong style={{color: '#000', width: '140px'}}>{cb.txnAmt}</strong></div>
+                          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}><span style={{ color: '#9e9e9e' }}>Remaining Days <span style={{color:'red'}}>*</span> :</span> <strong style={{color: '#000', width: '140px'}}>{cb.aging}</strong></div>
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}><span style={{ color: '#9e9e9e' }}>Dispute Type <span style={{color:'red'}}>*</span> :</span> <strong style={{color: '#000', width: '140px', textTransform: 'uppercase'}}>{cb.mSubStatus || cb.mStatus}</strong></div>
+                          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}><span style={{ color: '#9e9e9e' }}>Dispute Description <span style={{color:'red'}}>*</span> :</span> <strong style={{color: '#000', width: '140px'}}>13.1-Services Not Provided or Merchandise Not Received</strong></div>
+                          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '16px' }}><span style={{ color: '#9e9e9e' }}>Source Amount <span style={{color:'red'}}>*</span> :</span> <strong style={{color: '#000', width: '140px'}}>{cb.txnAmt}</strong></div>
+                          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}><span style={{ color: '#9e9e9e' }}>Re-presentment Received Date Credit <span style={{color:'red'}}>*</span> :</span> <strong style={{color: '#000', width: '140px'}}>-</strong></div>
+                          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}><span style={{ color: '#9e9e9e' }}>Dispute Amount (INR) <span style={{color:'red'}}>*</span> :</span> <strong style={{color: '#000', width: '140px'}}>{cb.txnAmt}</strong></div>
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}><span style={{ color: '#9e9e9e' }}>Current Status <span style={{color:'red'}}>*</span> :</span> <strong style={{color: '#000', width: '140px'}}>{cb.mStatus}</strong></div>
+                          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '40px' }}><span style={{ color: '#9e9e9e' }}>Destination Currency Code (Alpha) <span style={{color:'red'}}>*</span> :</span> <strong style={{color: '#000', width: '140px'}}>INR</strong></div>
+                          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}><span style={{ color: '#9e9e9e' }}>Last Remarks <span style={{color:'red'}}>*</span> :</span> <strong style={{color: '#000', width: '140px'}}>{cb.merchantAction || '-'}</strong></div>
+                        </div>
+                      </div>
+                      
+                      {/* Previous Documents */}
+                      <div style={{ padding: '12px 20px', background: '#fff', borderTop: '1px solid #eee', borderBottom: '1px solid #eee', fontWeight: 'bold', fontSize: '13px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: '#000' }}>
+                        <span>Previous Documents</span>
+                        <button style={{ background: '#5e35b1', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }} onClick={() => showToast('Documents downloaded', 'success')}>Download All Docs</button>
+                      </div>
+                      
+                      <div style={{ padding: '20px', display: 'flex', gap: '16px', overflowX: 'auto', background: '#fff' }}>
+                        {[1, 2, 3, 4].map(i => (
+                          <div key={i} style={{ width: '120px', height: '80px', border: '2px solid #e0e0e0', borderTop: '4px solid #d1c4e9', borderRadius: '4px', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#d1c4e9', background: '#fafafa' }}>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                    
+                    <div style={{ padding: '12px 20px', borderTop: '1px solid #e0e0e0', display: 'flex', justifyContent: 'flex-end', alignItems: 'center', background: '#fff', flexShrink: 0 }}>
+                      <button onClick={() => setActiveModal(null)} style={{ padding: '8px 24px', border: '1px solid #5e35b1', background: '#fff', color: '#5e35b1', borderRadius: '4px', cursor: 'pointer', fontSize: '13px', fontWeight: 'bold' }}>Close</button>
+                    </div>
+                  </div>
+                );
+              })()}
+            </div>
+          )}
+
         </main>
       </div>
     </div>
