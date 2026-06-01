@@ -2992,9 +2992,9 @@ function AdminPortal({
                                   <td style={{ padding: '12px 8px', color: '#4a148c', fontWeight: '600' }}>TID-{cb.userId.substring(0,4)}</td>
                                   <td style={{ padding: '12px 8px' }}>
                                     <div style={{ display: 'flex', gap: '4px' }}>
-                                      <span style={{ color: '#4a148c', cursor: 'pointer', fontWeight: '600' }} onClick={() => toggleRowExpand(cb.id)}>
+                                      <button className="btn btn-sm" style={{ background: '#5e35b1', color: '#fff', padding: '4px 8px', border: 'none', borderRadius: '4px', cursor: 'pointer' }} onClick={() => toggleRowExpand(cb.id)}>
                                         {isExpanded ? 'Hide' : 'View'}
-                                      </span>
+                                      </button>
                                       {cb.merchantAction === 'rejected' && cb.adminAction === null && (
                                         <button className="btn btn-sm btn-primary" onClick={() => { setTargetDisputeId(cb.id); setActiveModal('remarks'); }}>
                                           Review
@@ -3005,12 +3005,17 @@ function AdminPortal({
                                           Arb Decision
                                         </button>
                                       )}
+                                      {(cb.mSubStatus.includes('Won') || cb.mSubStatus.includes('Accepted')) && cb.mSubStatus !== 'Refund Success' && cb.mSubStatus !== 'Refund On Hold' && (
+                                        <button className="btn btn-sm btn-success" onClick={() => { setTargetDisputeId(cb.id); setActiveModal('refund'); }}>
+                                          Refund
+                                        </button>
+                                      )}
                                     </div>
                                   </td>
                                 </tr>
                                 {isExpanded && (
                                   <tr className="expand-row">
-                                    <td colSpan="18" style={{ padding: 0 }}>
+                                    <td colSpan="14" style={{ padding: 0 }}>
                                       <div className="expand-inner" style={{ background: 'var(--bg)', borderTop: '1px solid var(--border)', borderBottom: '1px solid var(--border)' }}>
                                         <div className="expand-grid">
                                           <div className="eg-item"><div className="ek">Terminal ID</div><div className="ev">{cb.terminalId || '—'}</div></div>
