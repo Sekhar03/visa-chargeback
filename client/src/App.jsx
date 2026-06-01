@@ -234,6 +234,7 @@ export default function App() {
           showToast={showToast}
           refreshAllData={refreshAllData}
           resetAllSessions={resetAllSessions}
+          handleLogout={handleLogout}
         />
       )}
       
@@ -251,6 +252,7 @@ export default function App() {
           showToast={showToast}
           refreshAllData={refreshAllData}
           resetAllSessions={resetAllSessions}
+          handleLogout={handleLogout}
         />
       )}
 
@@ -266,6 +268,7 @@ export default function App() {
           showToast={showToast}
           refreshAllData={refreshAllData}
           resetAllSessions={resetAllSessions}
+          handleLogout={handleLogout}
         />
       )}
 
@@ -398,7 +401,7 @@ function LoginForm({ handleLogin, toggleTheme, darkMode }) {
 // MERCHANT DASHBOARD PORTAL
 // ═════════════════════════════════════════════
 function MerchantPortal({
-  currentUser, chargebacks, setView, toggleTheme, darkMode, formatINR, formatDateDisp, showToast, refreshAllData, resetAllSessions
+  currentUser, chargebacks, setView, toggleTheme, darkMode, formatINR, formatDateDisp, showToast, refreshAllData, resetAllSessions, handleLogout
 }) {
   const [activePage, setActivePage] = useState('dashboard'); // 'dashboard' | 'reports' | 'raised' | 'respond' | 'detail'
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -2062,7 +2065,7 @@ function MerchantPortal({
 // ADMIN PORTAL DASHBOARD
 // ═════════════════════════════════════════════
 function AdminPortal({
-  currentUser, chargebacks, users, ledger, setView, toggleTheme, darkMode, formatINR, formatDateDisp, showToast, refreshAllData, resetAllSessions
+  currentUser, chargebacks, users, ledger, setView, toggleTheme, darkMode, formatINR, formatDateDisp, showToast, refreshAllData, resetAllSessions, handleLogout
 }) {
   const [activePage, setActivePage] = useState('a-dashboard'); // 'a-dashboard' | 'a-chargeback' | 'a-raise-cb' | 'a-view-cb' | 'a-lein' | 'a-credit'
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -3745,7 +3748,7 @@ function AdminPortal({
 // PARTNER PORTAL
 // ═════════════════════════════════════════════
 function PartnerPortal({
-  currentUser, chargebacks, setView, toggleTheme, darkMode, formatINR, formatDateDisp, showToast, refreshAllData, resetAllSessions
+  currentUser, chargebacks, setView, toggleTheme, darkMode, formatINR, formatDateDisp, showToast, refreshAllData, resetAllSessions, handleLogout
 }) {
   const [activePage, setActivePage] = useState('p-dashboard');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
