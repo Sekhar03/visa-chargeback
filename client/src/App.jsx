@@ -1983,6 +1983,7 @@ function AdminPortal({
   // Pagination view chargebacks
   const [aVcPage, setAVcPage] = useState(1);
   const [aVcLimit, setAVcLimit] = useState(5);
+  const [adminTab, setAdminTab] = useState('management');
 
   // Expanded row IDs
   const [expandedRowIds, setExpandedRowIds] = useState({});
@@ -2050,6 +2051,12 @@ function AdminPortal({
       if (filterTo && cb.createdDate && cb.createdDate > filterTo) return false;
       return true;
     });
+
+    if (adminTab === 'merchant-pending') {
+      list = list.filter(cb => cb.mStatus === 'Document Pending from Merchant');
+    } else if (adminTab === 'verification-pending') {
+      list = list.filter(cb => cb.mStatus === 'Document Pending for Verification');
+    }
 
     if (aVcSearchInput) {
       const q = aVcSearchInput.toLowerCase();
@@ -2944,9 +2951,18 @@ function AdminPortal({
                 </fieldset>
 
                 <div style={{ display: 'flex', borderBottom: '1px solid #f0f0f0', marginBottom: '20px', gap: '32px' }}>
-                  <div style={{ padding: '12px 0', color: '#9e9e9e', fontWeight: '700', fontSize: '15px', cursor: 'pointer' }}>Dispute Management</div>
-                  <div style={{ padding: '12px 0', color: '#9e9e9e', fontWeight: '700', fontSize: '15px', cursor: 'pointer' }}>Document pending from Merchant</div>
-                  <div style={{ padding: '12px 0', color: '#4a148c', fontWeight: '700', fontSize: '15px', borderBottom: '3px solid #4a148c', cursor: 'pointer' }}>Document Pending for Verification</div>
+                  <div 
+                    style={{ padding: '12px 0', color: adminTab === 'management' ? '#4a148c' : '#9e9e9e', fontWeight: '700', fontSize: '15px', borderBottom: adminTab === 'management' ? '3px solid #4a148c' : 'none', cursor: 'pointer' }}
+                    onClick={() => { setAdminTab('management'); setAVcPage(1); }}
+                  >Dispute Management</div>
+                  <div 
+                    style={{ padding: '12px 0', color: adminTab === 'merchant-pending' ? '#4a148c' : '#9e9e9e', fontWeight: '700', fontSize: '15px', borderBottom: adminTab === 'merchant-pending' ? '3px solid #4a148c' : 'none', cursor: 'pointer' }}
+                    onClick={() => { setAdminTab('merchant-pending'); setAVcPage(1); }}
+                  >Document pending from Merchant</div>
+                  <div 
+                    style={{ padding: '12px 0', color: adminTab === 'verification-pending' ? '#4a148c' : '#9e9e9e', fontWeight: '700', fontSize: '15px', borderBottom: adminTab === 'verification-pending' ? '3px solid #4a148c' : 'none', cursor: 'pointer' }}
+                    onClick={() => { setAdminTab('verification-pending'); setAVcPage(1); }}
+                  >Document Pending for Verification</div>
                 </div>
 
                 <div className="tbl-card" style={{ boxShadow: 'none', border: 'none', background: 'transparent' }}>
