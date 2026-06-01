@@ -2017,9 +2017,9 @@ function AdminPortal({
     });
 
     if (adminTab === 'merchant-pending') {
-      list = list.filter(cb => cb.mStatus === 'Document Pending from Merchant');
+      list = list.filter(cb => !cb.merchantAction);
     } else if (adminTab === 'verification-pending') {
-      list = list.filter(cb => cb.mStatus === 'Document Pending for Verification');
+      list = list.filter(cb => (cb.merchantAction === 'evidence' || cb.merchantAction === 'rejected') && cb.adminAction === null);
     }
 
     if (aVcSearchInput) {
