@@ -26,7 +26,7 @@ router.get('/:username', async (req, res) => {
 });
 
 // ── Helper: build all chargeback seed records ─────────────────────────────────
-function buildSeedData(TODAY) {
+const buildSeedData = (TODAY) => {
   const fmtDate = d => d.toISOString().split('T')[0];
   const dA = n => { let d = new Date(TODAY); d.setDate(d.getDate() - n); return fmtDate(d); };
   const dL = n => fmtDate(new Date(TODAY.getTime() + n * 86400000));
@@ -538,3 +538,5 @@ router.post('/reseed', async (req, res) => {
 });
 
 module.exports = router;
+module.exports.buildSeedData = buildSeedData;
+
