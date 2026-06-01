@@ -3282,38 +3282,60 @@ function AdminPortal({
                   </div>
 
                   {/* Previous Documents */}
-                  <div style={{ padding: '12px 20px', background: '#fff', borderTop: '1px solid #eee', borderBottom: '1px solid #eee', fontWeight: 'bold', fontSize: '13px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: '#000' }}>
-                    <span>Previous Documents</span>
-                    <button style={{ background: '#5e35b1', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}>Download All Docs</button>
-                  </div>
-                  
-                  <div style={{ padding: '20px', display: 'flex', gap: '16px', overflowX: 'auto', background: '#fff' }}>
-                    {[1, 2, 3, 4].map(i => (
-                      <div key={i} style={{ width: '120px', height: '80px', border: '2px solid #e0e0e0', borderTop: '4px solid #d1c4e9', borderRadius: '4px', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#d1c4e9', background: '#fafafa' }}>
+                  {adminTab !== 'merchant-pending' && (
+                    <>
+                      <div style={{ padding: '12px 20px', background: '#fff', borderTop: '1px solid #eee', borderBottom: '1px solid #eee', fontWeight: 'bold', fontSize: '13px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: '#000' }}>
+                        <span>Previous Documents</span>
+                        <button style={{ background: '#5e35b1', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}>Download All Docs</button>
                       </div>
-                    ))}
-                  </div>
+                      
+                      <div style={{ padding: '20px', display: 'flex', gap: '16px', overflowX: 'auto', background: '#fff' }}>
+                        {[1, 2, 3, 4].map(i => (
+                          <div key={i} style={{ width: '120px', height: '80px', border: '2px solid #e0e0e0', borderTop: '4px solid #d1c4e9', borderRadius: '4px', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#d1c4e9', background: '#fafafa' }}>
+                          </div>
+                        ))}
+                      </div>
+                    </>
+                  )}
                 </div>
                 
                 <div style={{ padding: '12px 20px', borderTop: '1px solid #e0e0e0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#fff', flexShrink: 0, zIndex: 10 }}>
-                  <div style={{ display: 'flex', gap: '8px' }}>
-                    {cb.merchantAction === 'rejected' && cb.adminAction === null && (
-                      <button className="btn btn-sm btn-primary" onClick={() => { setActiveModal('remarks'); }}>
-                        Review
-                      </button>
-                    )}
-                    {cb.mStatus.includes('Arbitration') && !cb.adminAction && (
-                      <button className="btn btn-sm" style={{ background: 'var(--purple)', color: '#fff' }} onClick={() => { setActiveModal('arbitration'); }}>
-                        Arb Decision
-                      </button>
-                    )}
-                    {(cb.mSubStatus.includes('Won') || cb.mSubStatus.includes('Accepted')) && cb.mSubStatus !== 'Refund Success' && cb.mSubStatus !== 'Refund On Hold' && (
-                      <button className="btn btn-sm btn-success" onClick={() => { setActiveModal('refund'); }}>
-                        Refund
-                      </button>
-                    )}
-                  </div>
-                  <button onClick={() => setActiveModal(null)} style={{ padding: '6px 16px', border: '1px solid #5e35b1', background: '#fff', color: '#5e35b1', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}>Cancel</button>
+                  {adminTab === 'merchant-pending' ? (
+                    <>
+                      <div style={{ flex: 1 }}>
+                        <select style={{ padding: '8px 12px', border: '1px solid #e0e0e0', borderRadius: '4px', fontSize: '13px', width: '250px', outline: 'none' }}>
+                          <option value="full">Dispute Accepted - Full</option>
+                          <option value="partial">Dispute Accepted - Partial</option>
+                          <option value="declined">Dispute Declined</option>
+                        </select>
+                      </div>
+                      <div style={{ display: 'flex', gap: '12px' }}>
+                        <button onClick={() => setActiveModal(null)} style={{ padding: '6px 16px', border: '1px solid #5e35b1', background: '#fff', color: '#5e35b1', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}>Cancel</button>
+                        <button style={{ padding: '6px 16px', border: 'none', background: '#5e35b1', color: '#fff', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}>Submit</button>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div style={{ display: 'flex', gap: '8px' }}>
+                        {cb.merchantAction === 'rejected' && cb.adminAction === null && (
+                          <button className="btn btn-sm btn-primary" onClick={() => { setActiveModal('remarks'); }}>
+                            Review
+                          </button>
+                        )}
+                        {cb.mStatus.includes('Arbitration') && !cb.adminAction && (
+                          <button className="btn btn-sm" style={{ background: 'var(--purple)', color: '#fff' }} onClick={() => { setActiveModal('arbitration'); }}>
+                            Arb Decision
+                          </button>
+                        )}
+                        {(cb.mSubStatus.includes('Won') || cb.mSubStatus.includes('Accepted')) && cb.mSubStatus !== 'Refund Success' && cb.mSubStatus !== 'Refund On Hold' && (
+                          <button className="btn btn-sm btn-success" onClick={() => { setActiveModal('refund'); }}>
+                            Refund
+                          </button>
+                        )}
+                      </div>
+                      <button onClick={() => setActiveModal(null)} style={{ padding: '6px 16px', border: '1px solid #5e35b1', background: '#fff', color: '#5e35b1', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}>Cancel</button>
+                    </>
+                  )}
                 </div>
               </div>
             );
