@@ -3006,7 +3006,7 @@ function AdminPortal({
                         <tr style={{ color: '#4a148c', fontSize: '11px', textAlign: 'left', background: 'transparent' }}>
                           <th style={{ padding: '12px 8px', fontWeight: '700' }}>Case ID</th>
                           <th style={{ padding: '12px 8px', fontWeight: '700' }}>Dispute Date</th>
-                          <th style={{ padding: '12px 8px', fontWeight: '700' }}>Bank</th>
+
                           <th style={{ padding: '12px 8px', fontWeight: '700' }}>Aggregator</th>
                           <th style={{ padding: '12px 8px', fontWeight: '700' }}>Scheme</th>
                           <th style={{ padding: '12px 8px', fontWeight: '700' }}>Dispute Type</th>
@@ -3029,7 +3029,7 @@ function AdminPortal({
                                 <tr style={{ borderBottom: '1px solid #f0f0f0', fontSize: '12px', background: 'transparent' }}>
                                   <td style={{ padding: '12px 8px', color: '#4a148c', fontWeight: '600' }}>{cb.id.substring(0, 8).toUpperCase()}</td>
                                   <td style={{ padding: '12px 8px', color: '#4a148c', fontWeight: '600' }}>{formatDateDisp(cb.txnDate)}</td>
-                                  <td style={{ padding: '12px 8px', color: '#4a148c', fontWeight: '600' }}>RBL Bank Ltd</td>
+
                                   <td style={{ padding: '12px 8px', color: '#4a148c', fontWeight: '600' }}>iServeU</td>
                                   <td style={{ padding: '12px 8px', color: '#4a148c', fontWeight: '600' }}>Visa</td>
                                   <td style={{ padding: '12px 8px', color: '#4a148c', fontWeight: '600' }}>{cb.mSubStatus || cb.mStatus}</td>
