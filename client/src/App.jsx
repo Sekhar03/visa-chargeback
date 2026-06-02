@@ -4352,6 +4352,8 @@ function PartnerPortal({
               })()}
             </div>
           )}
+
+        </main>
       </div>
     </div>
   );
