@@ -495,6 +495,7 @@ function MerchantPortal({
   const [activePage, setActivePage] = useState('dashboard'); // 'dashboard' | 'reports' | 'raised' | 'respond' | 'detail'
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [disputeMenuOpen, setDisputeMenuOpen] = useState(true);
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   
   // Detail disputes states (Removed)
 
@@ -874,15 +875,23 @@ function MerchantPortal({
           {darkMode ? '☀️' : '🌙'}
         </button>
         <button className="hdr-bell">🔔<span className="notif-dot"></span></button>
-        <button type="button" className="btn btn-secondary btn-sm" onClick={handleLogout} title="Log out">
-          Logout
-        </button>
-        <div className="hdr-user" title={currentUser.name}>
+        <div 
+          className="hdr-user" 
+          title={currentUser.name}
+          onClick={() => setProfileMenuOpen(!profileMenuOpen)}
+          style={{ position: 'relative', cursor: 'pointer' }}
+        >
           <div className="avatar">🌐</div>
           <div>
             <div className="hdr-uname">{currentUser.name}</div>
             <div className="hdr-urole">Merchant</div>
           </div>
+          {profileMenuOpen && (
+            <div style={{ position: 'absolute', top: '100%', right: 0, marginTop: '8px', background: 'var(--bg-card, #fff)', border: '1px solid var(--border-color, #ddd)', borderRadius: '4px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', zIndex: 1000, minWidth: '160px', overflow: 'hidden' }}>
+              <div style={{ padding: '12px 16px', color: 'var(--text-main, #333)', fontSize: '13px', cursor: 'pointer', borderBottom: '1px solid var(--border-color, #eee)', transition: 'background 0.2s' }} onMouseEnter={(e) => e.target.style.background='var(--bg-body, #f9f9f9)'} onMouseLeave={(e) => e.target.style.background='transparent'} onClick={(e) => { e.stopPropagation(); showToast('Change password functionality not implemented'); setProfileMenuOpen(false); }}>Change Password</div>
+              <div style={{ padding: '12px 16px', color: 'var(--red, #d32f2f)', fontSize: '13px', cursor: 'pointer', transition: 'background 0.2s' }} onMouseEnter={(e) => e.target.style.background='var(--bg-body, #f9f9f9)'} onMouseLeave={(e) => e.target.style.background='transparent'} onClick={(e) => { e.stopPropagation(); handleLogout(); }}>Logout</div>
+            </div>
+          )}
         </div>
       </header>
 
@@ -905,11 +914,6 @@ function MerchantPortal({
 
 
 
-          </div>
-          <div style={{ marginTop: 'auto', padding: '16px' }}>
-            <button type="button" className="btn btn-secondary btn-sm" style={{ width: '100%' }} onClick={handleLogout}>
-              Logout
-            </button>
           </div>
         </nav>
 
@@ -2077,6 +2081,7 @@ function AdminPortal({
   const [activePage, setActivePage] = useState('a-dashboard'); // 'a-dashboard' | 'a-chargeback' | 'a-raise-cb' | 'a-view-cb' | 'a-lein' | 'a-credit'
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [disputeMenuOpen, setDisputeMenuOpen] = useState(true);
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
 
   // Modal active
   const [activeModal, setActiveModal] = useState(null); // null | 'remarks' | 'arbitration' | 'refund'
@@ -2754,15 +2759,23 @@ function AdminPortal({
           {darkMode ? '☀️' : '🌙'}
         </button>
         <button className="hdr-bell">🔔<span className="notif-dot"></span></button>
-        <button type="button" className="btn btn-secondary btn-sm" onClick={handleLogout} title="Log out">
-          Logout
-        </button>
-        <div className="hdr-user" title={currentUser.name}>
+        <div 
+          className="hdr-user" 
+          title={currentUser.name}
+          onClick={() => setProfileMenuOpen(!profileMenuOpen)}
+          style={{ position: 'relative', cursor: 'pointer' }}
+        >
           <div className="avatar" style={{ background: '#1e293b', color: '#fff' }}>KD</div>
           <div>
             <div className="hdr-uname">{currentUser.name}</div>
             <div className="hdr-urole">Admin / FRM</div>
           </div>
+          {profileMenuOpen && (
+            <div style={{ position: 'absolute', top: '100%', right: 0, marginTop: '8px', background: 'var(--bg-card, #fff)', border: '1px solid var(--border-color, #ddd)', borderRadius: '4px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', zIndex: 1000, minWidth: '160px', overflow: 'hidden' }}>
+              <div style={{ padding: '12px 16px', color: 'var(--text-main, #333)', fontSize: '13px', cursor: 'pointer', borderBottom: '1px solid var(--border-color, #eee)', transition: 'background 0.2s' }} onMouseEnter={(e) => e.target.style.background='var(--bg-body, #f9f9f9)'} onMouseLeave={(e) => e.target.style.background='transparent'} onClick={(e) => { e.stopPropagation(); showToast('Change password functionality not implemented'); setProfileMenuOpen(false); }}>Change Password</div>
+              <div style={{ padding: '12px 16px', color: 'var(--red, #d32f2f)', fontSize: '13px', cursor: 'pointer', transition: 'background 0.2s' }} onMouseEnter={(e) => e.target.style.background='var(--bg-body, #f9f9f9)'} onMouseLeave={(e) => e.target.style.background='transparent'} onClick={(e) => { e.stopPropagation(); handleLogout(); }}>Logout</div>
+            </div>
+          )}
         </div>
       </header>
 
@@ -2791,14 +2804,6 @@ function AdminPortal({
 
 
 
-          </div>
-          <div style={{ marginTop: 'auto', padding: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            <button type="button" className="btn btn-secondary btn-sm" style={{ width: '100%' }} onClick={handleLogout}>
-              Logout
-            </button>
-            <button type="button" className="btn btn-secondary btn-sm" style={{ width: '100%', fontSize: '12px' }} onClick={resetAllSessions}>
-              Reset demo data
-            </button>
           </div>
         </nav>
 
@@ -3715,6 +3720,7 @@ function PartnerPortal({
 }) {
   const [activePage, setActivePage] = useState('p-dashboard');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
 
   const TODAY_STR = new Date().toISOString().split('T')[0];
   const DEFAULT_FROM = (() => { let d = new Date(); d.setDate(d.getDate() - 30); return d.toISOString().split('T')[0]; })();
@@ -3776,15 +3782,23 @@ function PartnerPortal({
         <div className="hdr-space"></div>
         <button className="theme-toggle-btn" onClick={toggleTheme}>{darkMode ? '☀️' : '🌙'}</button>
         <button className="hdr-bell">🔔<span className="notif-dot"></span></button>
-        <button type="button" className="btn btn-secondary btn-sm" onClick={handleLogout} title="Log out">
-          Logout
-        </button>
-        <div className="hdr-user" title={currentUser.name}>
+        <div 
+          className="hdr-user" 
+          title={currentUser.name}
+          onClick={() => setProfileMenuOpen(!profileMenuOpen)}
+          style={{ position: 'relative', cursor: 'pointer' }}
+        >
           <div className="avatar" style={{ background: '#7c3aed' }}>AM</div>
           <div>
             <div className="hdr-uname">{currentUser.name}</div>
             <div className="hdr-urole">Partner</div>
           </div>
+          {profileMenuOpen && (
+            <div style={{ position: 'absolute', top: '100%', right: 0, marginTop: '8px', background: 'var(--bg-card, #fff)', border: '1px solid var(--border-color, #ddd)', borderRadius: '4px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', zIndex: 1000, minWidth: '160px', overflow: 'hidden' }}>
+              <div style={{ padding: '12px 16px', color: 'var(--text-main, #333)', fontSize: '13px', cursor: 'pointer', borderBottom: '1px solid var(--border-color, #eee)', transition: 'background 0.2s' }} onMouseEnter={(e) => e.target.style.background='var(--bg-body, #f9f9f9)'} onMouseLeave={(e) => e.target.style.background='transparent'} onClick={(e) => { e.stopPropagation(); showToast('Change password functionality not implemented'); setProfileMenuOpen(false); }}>Change Password</div>
+              <div style={{ padding: '12px 16px', color: 'var(--red, #d32f2f)', fontSize: '13px', cursor: 'pointer', transition: 'background 0.2s' }} onMouseEnter={(e) => e.target.style.background='var(--bg-body, #f9f9f9)'} onMouseLeave={(e) => e.target.style.background='transparent'} onClick={(e) => { e.stopPropagation(); handleLogout(); }}>Logout</div>
+            </div>
+          )}
         </div>
       </header>
 
@@ -3800,11 +3814,6 @@ function PartnerPortal({
               <span className="si">👥</span> Merchant Details
             </div>
 
-          </div>
-          <div style={{ marginTop: 'auto', padding: '16px' }}>
-            <button type="button" className="btn btn-secondary btn-sm" style={{ width: '100%' }} onClick={handleLogout}>
-              Logout
-            </button>
           </div>
         </nav>
 
