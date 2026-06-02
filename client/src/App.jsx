@@ -810,9 +810,19 @@ function MerchantPortal({
   // Draw Reports charts
   const getReportChartData = () => {
     const filtered = merchantDisputes.filter(cb => {
+      if (reportFilter.searchText) {
+        const q = reportFilter.searchText.toLowerCase();
+        if (reportFilter.searchBy === 'Txn ID' && !cb.txnId?.toLowerCase().includes(q)) return false;
+        if (reportFilter.searchBy === 'RRN' && !cb.rrn?.toLowerCase().includes(q)) return false;
+        if (reportFilter.searchBy === 'TID' && !cb.tid?.toLowerCase().includes(q)) return false;
+        if (reportFilter.searchBy === 'MID' && !cb.userId?.toLowerCase().includes(q)) return false;
+        if (reportFilter.searchBy === 'Case ID' && !cb.caseId?.toLowerCase().includes(q) && !cb.id?.toLowerCase().includes(q)) return false;
+        if (!reportFilter.searchBy && !cb.rrn?.toLowerCase().includes(q) && !cb.txnId?.toLowerCase().includes(q) && !cb.userId?.toLowerCase().includes(q) && !cb.id?.toLowerCase().includes(q)) return false;
+      }
+      if (reportFilter.disputeStatus && cb.mStatus !== reportFilter.disputeStatus) return false;
+      if (reportFilter.disputeType && cb.mSubStatus !== reportFilter.disputeType) return false;
       if (reportFilter.from && cb.createdDate && cb.createdDate < reportFilter.from) return false;
       if (reportFilter.to && cb.createdDate && cb.createdDate > reportFilter.to) return false;
-      if (reportFilter.provider && cb.product !== reportFilter.provider) return false;
       return true;
     });
 
@@ -896,26 +906,7 @@ function MerchantPortal({
               <span className="si">📋</span> Dispute Management
             </div>
 
-            <div 
-              className={`sb-item ${disputeMenuOpen ? 'open' : ''}`} 
-              onClick={() => setDisputeMenuOpen(!disputeMenuOpen)}
-            >
-              <span className="si">📊</span> Filter Disputes <span className="arr">▾</span>
-            </div>
-            <div className={`sb-sub ${disputeMenuOpen ? 'open' : ''}`}>
-              <div 
-                className={`sb-sub-item ${activePage === 'raised' ? 'active' : ''}`} 
-                onClick={() => { setRaisedPage(1); setActivePage('raised'); }}
-              >
-                <span className="ssi">📅</span> Dispute Raised Date
-              </div>
-              <div 
-                className={`sb-sub-item ${activePage === 'respond' ? 'active' : ''}`} 
-                onClick={() => { setRespondPage(1); setActivePage('respond'); }}
-              >
-                <span className="ssi">📅</span> Dispute Respond By Date
-              </div>
-            </div>
+
 
           </div>
           <div style={{ marginTop: 'auto', padding: '16px' }}>
@@ -937,30 +928,6 @@ function MerchantPortal({
                   </div>
                   <div className="wb-date">{new Date().toLocaleDateString('en-IN')}</div>
                 </div>
-                <div className="filter-card" style={{ marginBottom: '16px' }}>
-                  <div className="filter-row">
-                    <div className="filter-group">
-                      <label>From Date</label>
-                      <input 
-                        type="date" 
-                        className="fi-date" 
-                        value={dashFilter.from} 
-                        onChange={(e) => setDashFilter(prev => ({ ...prev, from: e.target.value }))} 
-                      />
-                    </div>
-                    <div className="filter-group">
-                      <label>To Date</label>
-                      <input 
-                        type="date" 
-                        className="fi-date" 
-                        value={dashFilter.to} 
-                        onChange={(e) => setDashFilter(prev => ({ ...prev, to: e.target.value }))} 
-                      />
-                    </div>
-                    <button className="btn btn-primary" onClick={refreshAllData}>Sync Data</button>
-                  </div>
-                </div>
-
                 <div className="stats-grid">
                   {/* Total Disputes Card */}
                   <div className="stat-card received">
@@ -1022,44 +989,6 @@ function MerchantPortal({
                       </div>
                       <div className="stat-outcome-label won-label">📈 Win Rate</div>
                     </div>
-                  </div>
-                </div>
-
-                <div className="tbl-card">
-                  <div className="tbl-toolbar">
-                    <span style={{ fontSize: '14px', fontWeight: '700' }}>Recent Chargebacks</span>
-                    <div className="tbl-space"></div>
-                    <button className="btn btn-outline btn-sm" onClick={() => setActivePage('respond')}>
-                      View All →
-                    </button>
-                  </div>
-                  <div className="tbl-wrap">
-                    <table>
-                      <thead>
-                        <tr>
-                          <th>RRN Number</th>
-                          <th>Txn ID</th>
-                          <th>Merchant Status</th>
-                          <th>Sub Status</th>
-                          <th>Adj Amount</th>
-                          <th>Adj Date</th>
-                          <th>Action</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {merchantDisputes.slice(0, 5).map(cb => (
-                          <tr key={cb.id}>
-                            <td className="mono">{cb.rrn}</td>
-                            <td className="mono">{cb.txnId}</td>
-                            <td>{renderStatusBadge(cb.mStatus)}</td>
-                            <td>{renderSubBadge(cb.mSubStatus)}</td>
-                            <td><strong>{formatINR(cb.adjAmt)}</strong></td>
-                            <td>{formatDateDisp(cb.adjDate)}</td>
-                            <td>{getActionBtn(cb)}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
                   </div>
                 </div>
               </div>
@@ -1577,35 +1506,24 @@ function MerchantPortal({
                       <select className="sp-input" value={reportFilter.disputeType}
                         onChange={(e) => setReportFilter(prev => ({ ...prev, disputeType: e.target.value }))}>
                         <option value="">Dispute Type</option>
-                        <option>Chargeback Raise</option>
-                        <option>Pre-Arbitration Raise</option>
-                        <option>Arbitration Raise</option>
-                        <option>VROL Inquiry</option>
-                        <option>VROL Chargeback</option>
-                        <option>VROL Pre-Arbitration</option>
-                        <option>VROL Arbitration</option>
-                        <option>Fraud Chargeback Raise</option>
-                        <option>Differed Chargeback Raise</option>
+                        <option value="Chargeback">Chargeback</option>
+                        <option value="Pre-Arbitration">Pre-Arbitration</option>
+                        <option value="Retrieval Request">Retrieval Request</option>
+                        <option value="Arbitration">Arbitration</option>
                       </select>
                     </div>
                     <div className="sp-field">
                       <label>Aggregator</label>
                       <select className="sp-input" value={reportFilter.provider}
                         onChange={(e) => setReportFilter(prev => ({ ...prev, provider: e.target.value }))}>
-                        <option value="">Aggregator</option>
-                                                <option value="VISA">VISA / Acquirer</option>
-                        <option value="Mastercard">Mastercard</option>
-                        <option value="Rupay">Rupay</option>
+                        <option value="ISU">ISU</option>
                       </select>
                     </div>
                     <div className="sp-field">
                       <label>Scheme</label>
                       <select className="sp-input" value={reportFilter.scheme}
                         onChange={(e) => setReportFilter(prev => ({ ...prev, scheme: e.target.value }))}>
-                        <option value="">Scheme</option>
-                                                <option>VISA</option>
-                        <option>Mastercard</option>
-                        <option>Rupay</option>
+                        <option value="Visa">Visa</option>
                       </select>
                     </div>
                     <div className="sp-field">
@@ -1613,13 +1531,13 @@ function MerchantPortal({
                       <select className="sp-input" value={reportFilter.disputeStatus}
                         onChange={(e) => setReportFilter(prev => ({ ...prev, disputeStatus: e.target.value }))}>
                         <option value="">Dispute Status</option>
-                        <option>Chargeback New</option>
-                        <option>Chargeback in Progress</option>
-                        <option>Chargeback Resubmit</option>
-                        <option>Chargeback Won</option>
-                        <option>Chargeback Lost</option>
-                        <option>Refund Success</option>
-                        <option>Refund On Hold</option>
+                        <option value="Dispute Won Partially">Dispute Won Partially</option>
+                        <option value="Dispute Won Fully">Dispute Won Fully</option>
+                        <option value="Dispute Lost – TAT Expired">Dispute Lost – TAT Expired</option>
+                        <option value="Dispute Lost – Accepted">Dispute Lost – Accepted</option>
+                        <option value="Document Rejected">Document Rejected</option>
+                        <option value="Document Pending Verification">Document Pending Verification</option>
+                        <option value="Document Pending from Merchant">Document Pending from Merchant</option>
                       </select>
                     </div>
                     <div className="sp-field">
@@ -1627,9 +1545,11 @@ function MerchantPortal({
                       <select className="sp-input" value={reportFilter.searchBy}
                         onChange={(e) => setReportFilter(prev => ({ ...prev, searchBy: e.target.value }))}>
                         <option value="">Search By</option>
-                        <option value="rrn">RRN</option>
-                        <option value="txnId">Txn ID</option>
-                        <option value="caseId">Case ID</option>
+                        <option value="Txn ID">Transaction ID (Txn ID)</option>
+                        <option value="RRN">RRN</option>
+                        <option value="TID">TID</option>
+                        <option value="MID">MID</option>
+                        <option value="Case ID">Case ID</option>
                       </select>
                     </div>
                     <div className="sp-field">
@@ -3029,10 +2949,9 @@ function AdminPortal({
                           <span style={{ position: 'absolute', left: '12px', top: '10px', color: '#5e35b1' }}>📅</span>
                           <input type="text" onFocus={(e) => e.target.type = 'date'} onBlur={(e) => { if (!e.target.value) e.target.type = 'text'; }} style={{ width: '100%', padding: '10px 10px 10px 36px', border: '1px solid #e0e0e0', borderRadius: '4px', color: '#757575', outline: 'none', background: 'transparent' }} placeholder="From Date" value={filterFrom} onChange={(e) => setFilterFrom(e.target.value)} />
                         </div>
-                        <div style={{ position: 'relative' }}>
-                          <span style={{ position: 'absolute', left: '12px', top: '10px', fontSize: '11px', color: '#9e9e9e' }}>Aggregator</span>
-                          <input type="text" readOnly value="ISU" style={{ width: '100%', padding: '10px 10px 10px 70px', border: '1px solid #e0e0e0', borderRadius: '4px', color: '#757575', outline: 'none', background: '#f5f5f5', cursor: 'not-allowed' }} />
-                        </div>
+                        <select style={{ width: '100%', padding: '10px', border: '1px solid #e0e0e0', borderRadius: '4px', color: '#757575', outline: 'none', appearance: 'auto', background: 'transparent' }}>
+                          <option value="ISU">ISU</option>
+                        </select>
                         <select style={{ width: '100%', padding: '10px', border: '1px solid #e0e0e0', borderRadius: '4px', color: '#757575', outline: 'none', appearance: 'auto', background: 'transparent' }} value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}>
                           <option value="">Dispute Status</option>
                           <option value="Dispute Won Partially">Dispute Won Partially</option>
@@ -3050,10 +2969,9 @@ function AdminPortal({
                           <span style={{ position: 'absolute', left: '12px', top: '10px', color: '#5e35b1' }}>📅</span>
                           <input type="text" onFocus={(e) => e.target.type = 'date'} onBlur={(e) => { if (!e.target.value) e.target.type = 'text'; }} style={{ width: '100%', padding: '10px 10px 10px 36px', border: '1px solid #e0e0e0', borderRadius: '4px', color: '#757575', outline: 'none', background: 'transparent' }} placeholder="To Date" value={filterTo} onChange={(e) => setFilterTo(e.target.value)} />
                         </div>
-                        <div style={{ position: 'relative' }}>
-                          <span style={{ position: 'absolute', left: '12px', top: '10px', fontSize: '11px', color: '#9e9e9e' }}>Scheme</span>
-                          <input type="text" readOnly value="Visa" style={{ width: '100%', padding: '10px 10px 10px 60px', border: '1px solid #e0e0e0', borderRadius: '4px', color: '#757575', outline: 'none', background: '#f5f5f5', cursor: 'not-allowed' }} />
-                        </div>
+                        <select style={{ width: '100%', padding: '10px', border: '1px solid #e0e0e0', borderRadius: '4px', color: '#757575', outline: 'none', appearance: 'auto', background: 'transparent' }}>
+                          <option value="Visa">Visa</option>
+                        </select>
                         <select style={{ width: '100%', padding: '10px', border: '1px solid #e0e0e0', borderRadius: '4px', color: '#757575', outline: 'none', appearance: 'auto', background: 'transparent' }} value={filterSearchBy} onChange={(e) => setFilterSearchBy(e.target.value)}>
                           <option value="">Search By</option>
                           <option value="Txn ID">Transaction ID (Txn ID)</option>
