@@ -2789,12 +2789,7 @@ function AdminPortal({
               <span className="si">⚙️</span> Visa VROL Webhook Status
             </div>
 
-            <div 
-              className={`sb-item ${activePage === 'a-merchant' ? 'active' : ''}`}
-              onClick={() => setActivePage('a-merchant')}
-            >
-              <span className="si">👥</span> Merchant Management
-            </div>
+
 
           </div>
           <div style={{ marginTop: 'auto', padding: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -3420,89 +3415,7 @@ function AdminPortal({
 
 
 
-          {/* Merchant Management */}
-          {activePage === 'a-merchant' && (
-            <div className="page active">
-              <div className="page-inner">
-                <div className="page-hdr">
-                  <div>
-                    <h3 style={{ fontSize: '20px', fontWeight: '700', margin: 0 }}>Merchant Management</h3>
-                    <p style={{ color: 'var(--text-muted)', fontSize: '13px', margin: '4px 0 0' }}>Manage merchant accounts, compliance status, and dispute activity</p>
-                  </div>
-                  <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-                    <span style={{ fontSize: '12px', fontWeight: '700', color: 'var(--green)' }}>{users.filter(u => u.role === 'merchant').length} Active Merchants</span>
-                  </div>
-                </div>
-                <div className="tbl-card">
-                  <div className="tbl-wrap">
-                    <table>
-                      <thead>
-                        <tr>
-                          <th>Merchant Name</th>
-                          <th>Username</th>
-                          <th>Wallet Balance</th>
-                          <th>Role</th>
-                          <th>Disputes</th>
-                          <th>Open</th>
-                          <th>Won</th>
-                          <th>Status</th>
-                          <th>Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {users.filter(u => u.role === 'merchant').map(m => {
-                          const mDisputes = chargebacks.filter(c => c.userName === m.username);
-                          const openD = mDisputes.filter(c => !c.mSubStatus.includes('Won') && !c.mSubStatus.includes('Lost') && !c.mSubStatus.includes('Success')).length;
-                          const wonD = mDisputes.filter(c => c.mSubStatus.includes('Won') || c.mSubStatus.includes('Success')).length;
-                          return (
-                            <tr key={m.username}>
-                              <td style={{ fontWeight: '600' }}>{m.name}</td>
-                              <td className="mono" style={{ fontSize: '12px' }}>{m.username}</td>
-                              <td><strong>{formatINR(m.walletBalance)}</strong></td>
-                              <td><span className="badge badge-new" style={{ textTransform: 'capitalize' }}>{m.role}</span></td>
-                              <td style={{ fontWeight: '600' }}>{mDisputes.length}</td>
-                              <td><span style={{ color: openD > 3 ? 'var(--red)' : 'var(--yellow)', fontWeight: '600' }}>{openD}</span></td>
-                              <td><span style={{ color: 'var(--green)', fontWeight: '600' }}>{wonD}</span></td>
-                              <td><span className="badge badge-won">Active</span></td>
-                              <td>
-                                <button className="btn btn-warning btn-sm" style={{marginRight: '8px'}} onClick={() => showToast(`Merchant ${m.name} suspended`, 'warning')}>Suspend</button>
-                                <button className="btn btn-primary btn-sm" onClick={() => showToast(`Alert sent to ${m.name}`, 'success')}>Alert</button>
-                              </td>
-                            </tr>
-                          );
-                        })}
-                        {/* Additional demo merchant records */}
-                        {[
-                          { name: 'Reliance Retail', username: 'reliance_retail', wallet: 1250000, disputes: 48, open: 12, won: 31 },
-                          { name: 'Flipkart India', username: 'flipkart_in', wallet: 875000, disputes: 127, open: 38, won: 72 },
-                          { name: 'Myntra Fashion', username: 'myntra_f', wallet: 650000, disputes: 64, open: 18, won: 40 },
-                          { name: 'Zomato Services', username: 'zomato_svc', wallet: 420000, disputes: 33, open: 8, won: 22 },
-                          { name: 'Swiggy Instamart', username: 'swiggy_im', wallet: 380000, disputes: 29, open: 6, won: 18 },
-                          { name: 'Ola Electric', username: 'ola_elec', wallet: 290000, disputes: 15, open: 4, won: 9 },
-                          { name: 'Paytm Mall', username: 'paytm_mall', wallet: 510000, disputes: 89, open: 27, won: 51 },
-                        ].map((dm, i) => (
-                          <tr key={`dm-${i}`} style={{ opacity: 0.8 }}>
-                            <td style={{ fontWeight: '600' }}>{dm.name}</td>
-                            <td className="mono" style={{ fontSize: '12px' }}>{dm.username}</td>
-                            <td><strong>{formatINR(dm.wallet)}</strong></td>
-                            <td><span className="badge badge-new">merchant</span></td>
-                            <td style={{ fontWeight: '600' }}>{dm.disputes}</td>
-                            <td><span style={{ color: dm.open > 20 ? 'var(--red)' : 'var(--yellow)', fontWeight: '600' }}>{dm.open}</span></td>
-                            <td><span style={{ color: 'var(--green)', fontWeight: '600' }}>{dm.won}</span></td>
-                            <td><span className="badge badge-won">Active</span></td>
-                            <td>
-                              <button className="btn btn-warning btn-sm" style={{marginRight: '8px'}} onClick={() => showToast(`Merchant ${dm.name} suspended`, 'warning')}>Suspend</button>
-                              <button className="btn btn-primary btn-sm" onClick={() => showToast(`Alert sent to ${dm.name}`, 'success')}>Alert</button>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
+
 
 
         </main>
