@@ -326,6 +326,7 @@ export default function App() {
       {view === 'partner' && currentUser && (
         <PartnerPortal 
           currentUser={currentUser} 
+          users={users}
           chargebacks={chargebacks}
           setView={setView} 
           toggleTheme={toggleTheme} 
@@ -3059,40 +3060,26 @@ function AdminPortal({
                                   <td style={{ padding: '12px 8px', color: '#4a148c', fontWeight: '600' }}>TID-{cb.userId.substring(0,4)}</td>
                                   <td style={{ padding: '12px 8px', textAlign: 'center' }}>
                                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', justifyContent: 'center', alignItems: 'center' }}>
-                                      <button 
-                                        style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px' }}
-                                        onClick={() => { setTargetDisputeId(cb.id); setActiveModal('disputeDetails'); }}
-                                        title="View Details"
-                                      >
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#5e35b1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                                          <circle cx="12" cy="12" r="3"></circle>
-                                        </svg>
-                                      </button>
+                                      {adminTab !== 'verification-pending' && (
+                                        <button 
+                                          style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px' }}
+                                          onClick={() => { setTargetDisputeId(cb.id); setActiveModal('disputeDetails'); }}
+                                          title="View Details"
+                                        >
+                                          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#5e35b1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                            <circle cx="12" cy="12" r="3"></circle>
+                                          </svg>
+                                        </button>
+                                      )}
                                       {adminTab === 'verification-pending' && isPendingVerification(cb) && (
-                                        <>
-                                          <button
-                                            type="button"
-                                            className="btn btn-sm btn-primary"
-                                            onClick={() => { setTargetDisputeId(cb.id); setActiveModal('remarks'); }}
-                                          >
-                                            Review
-                                          </button>
-                                          <button
-                                            type="button"
-                                            className="btn btn-sm btn-success"
-                                            onClick={() => { setTargetDisputeId(cb.id); handleConsider(cb.id); }}
-                                          >
-                                            Consider
-                                          </button>
-                                          <button
-                                            type="button"
-                                            className="btn btn-sm btn-danger"
-                                            onClick={() => { setTargetDisputeId(cb.id); handleDecline(cb.id); }}
-                                          >
-                                            Decline
-                                          </button>
-                                        </>
+                                        <button
+                                          type="button"
+                                          className="btn btn-sm btn-primary"
+                                          onClick={() => { setTargetDisputeId(cb.id); setActiveModal('remarks'); }}
+                                        >
+                                          Review
+                                        </button>
                                       )}
                                     </div>
                                   </td>
@@ -3815,7 +3802,7 @@ function AdminPortal({
 // PARTNER PORTAL
 // ═════════════════════════════════════════════
 function PartnerPortal({
-  currentUser, chargebacks, setView, toggleTheme, darkMode, formatINR, formatDateDisp, showToast, refreshAllData, resetAllSessions, handleLogout
+  currentUser, users, chargebacks, setView, toggleTheme, darkMode, formatINR, formatDateDisp, showToast, refreshAllData, resetAllSessions, handleLogout
 }) {
   const [activePage, setActivePage] = useState('p-dashboard');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -3826,9 +3813,15 @@ function PartnerPortal({
   const [filterTo, setFilterTo] = useState(TODAY_STR);
   const [filterStatus, setFilterStatus] = useState('');
   const [filterScheme, setFilterScheme] = useState('');
+  const [filterDisputeType, setFilterDisputeType] = useState('');
+  const [filterSearchBy, setFilterSearchBy] = useState('');
+  const [filterSearchText, setFilterSearchText] = useState('');
+
   const [activeTab, setActiveTab] = useState('dispute-mgmt');
   const [activeModal, setActiveModal] = useState(null);
   const [targetDisputeId, setTargetDisputeId] = useState(null);
+  const [targetUserId, setTargetUserId] = useState(null);
+  const [merchantSearch, setMerchantSearch] = useState('');
 
   // Partner sees all disputes (they represent all merchants)
   const allDisputes = chargebacks;
@@ -3836,10 +3829,19 @@ function PartnerPortal({
   const evidenceDisputes = allDisputes.filter(cb => cb.merchantAction === 'evidence');
 
   const filteredDisputes = allDisputes.filter(cb => {
+    if (filterSearchText) {
+      const q = filterSearchText.toLowerCase();
+      if (filterSearchBy === 'Txn ID' && !cb.txnId?.toLowerCase().includes(q)) return false;
+      if (filterSearchBy === 'RRN' && !cb.rrn?.toLowerCase().includes(q)) return false;
+      if (filterSearchBy === 'TID' && !cb.tid?.toLowerCase().includes(q)) return false;
+      if (filterSearchBy === 'MID' && !cb.userId?.toLowerCase().includes(q)) return false;
+      if (filterSearchBy === 'Case ID' && !cb.caseId?.toLowerCase().includes(q) && !cb.id?.toLowerCase().includes(q)) return false;
+      if (!filterSearchBy && !cb.rrn?.toLowerCase().includes(q) && !cb.txnId?.toLowerCase().includes(q) && !cb.userId?.toLowerCase().includes(q) && !cb.id?.toLowerCase().includes(q)) return false;
+    }
+    if (filterStatus && cb.mStatus !== filterStatus) return false;
+    if (filterDisputeType && cb.mSubStatus !== filterDisputeType) return false;
     if (filterFrom && cb.createdDate && cb.createdDate < filterFrom) return false;
     if (filterTo && cb.createdDate && cb.createdDate > filterTo) return false;
-    if (filterStatus && cb.mSubStatus !== filterStatus) return false;
-    if (filterScheme && cb.product !== filterScheme) return false;
     return true;
   });
 
@@ -3885,8 +3887,8 @@ function PartnerPortal({
               <span className="si">⊞</span> Portfolio Analytics
             </div>
 
-            <div className={`sb-item ${activePage === 'p-controls' ? 'active' : ''}`} onClick={() => setActivePage('p-controls')}>
-              <span className="si">👥</span> Merchant Controls
+            <div className={`sb-item ${activePage === 'p-merchants' ? 'active' : ''}`} onClick={() => setActivePage('p-merchants')}>
+              <span className="si">👥</span> Merchant Details
             </div>
 
           </div>
@@ -4002,64 +4004,58 @@ function PartnerPortal({
                     </div>
                     <div className="sp-field">
                       <label>Dispute Type</label>
-                      <select className="sp-input" value="" onChange={() => {}}>
+                      <select className="sp-input" value={filterDisputeType} onChange={(e) => setFilterDisputeType(e.target.value)}>
                         <option value="">Dispute Type</option>
-                        <option>Chargeback Raise</option>
-                        <option>Pre-Arbitration Raise</option>
-                        <option>Arbitration Raise</option>
-                        <option>VROL Inquiry</option>
-                        <option>VROL Chargeback</option>
-                        <option>VROL Pre-Arbitration</option>
-                        <option>VROL Arbitration</option>
+                        <option value="Chargeback">Chargeback</option>
+                        <option value="Pre-Arbitration">Pre-Arbitration</option>
+                        <option value="Retrieval Request">Retrieval Request</option>
+                        <option value="Arbitration">Arbitration</option>
                       </select>
                     </div>
                     <div className="sp-field">
                       <label>Aggregator</label>
                       <select className="sp-input" value={filterScheme} onChange={(e) => setFilterScheme(e.target.value)}>
-                        <option value="">All Aggregators</option>
-                                                <option value="VISA">VISA / Acquirer</option>
-                        <option value="Mastercard">Mastercard</option>
-                        <option value="Rupay">Rupay</option>
+                        <option value="ISU">ISU</option>
                       </select>
                     </div>
                     <div className="sp-field">
                       <label>Scheme</label>
                       <select className="sp-input" value={filterScheme} onChange={(e) => setFilterScheme(e.target.value)}>
-                        <option value="">Scheme</option>
-                                                <option value="VISA">VISA</option>
-                        <option value="Mastercard">Mastercard</option>
-                        <option value="Rupay">Rupay</option>
+                        <option value="Visa">Visa</option>
                       </select>
                     </div>
                     <div className="sp-field">
                       <label>Dispute Status</label>
                       <select className="sp-input" value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}>
                         <option value="">Dispute Status</option>
-                        <option>Chargeback New</option>
-                        <option>Chargeback in Progress</option>
-                        <option>Chargeback Resubmit</option>
-                        <option>Chargeback Won</option>
-                        <option>Chargeback Lost</option>
-                        <option>Refund Success</option>
+                        <option value="Dispute Won Partially">Dispute Won Partially</option>
+                        <option value="Dispute Won Fully">Dispute Won Fully</option>
+                        <option value="Dispute Lost – TAT Expired">Dispute Lost – TAT Expired</option>
+                        <option value="Dispute Lost – Accepted">Dispute Lost – Accepted</option>
+                        <option value="Document Rejected">Document Rejected</option>
+                        <option value="Document Pending Verification">Document Pending Verification</option>
+                        <option value="Document Pending from Merchant">Document Pending from Merchant</option>
                       </select>
                     </div>
                     <div className="sp-field">
                       <label>Search By</label>
-                      <select className="sp-input">
-                        <option>Search By</option>
-                        <option>RRN</option>
-                        <option>Txn ID</option>
-                        <option>Case ID</option>
+                      <select className="sp-input" value={filterSearchBy} onChange={(e) => setFilterSearchBy(e.target.value)}>
+                        <option value="">Search By</option>
+                        <option value="Txn ID">Transaction ID (Txn ID)</option>
+                        <option value="RRN">RRN</option>
+                        <option value="TID">TID</option>
+                        <option value="MID">MID</option>
+                        <option value="Case ID">Case ID</option>
                       </select>
                     </div>
                     <div className="sp-field">
                       <label>Search</label>
-                      <input type="text" className="sp-input" placeholder="Search..." />
+                      <input type="text" className="sp-input" placeholder="Search..." value={filterSearchText} onChange={(e) => setFilterSearchText(e.target.value)} />
                     </div>
                     <div className="sp-field" style={{ visibility: 'hidden' }}></div>
                   </div>
                   <div className="search-panel-actions">
-                    <button className="btn btn-secondary" onClick={() => { setFilterFrom(DEFAULT_FROM); setFilterTo(TODAY_STR); setFilterStatus(''); setFilterScheme(''); }}>Reset</button>
+                    <button className="btn btn-secondary" onClick={() => { setFilterFrom(DEFAULT_FROM); setFilterTo(TODAY_STR); setFilterStatus(''); setFilterScheme(''); setFilterDisputeType(''); setFilterSearchBy(''); setFilterSearchText(''); }}>Reset</button>
                     <button className="btn btn-primary" onClick={() => showToast('Disputes filtered!')}>Search</button>
                     <table>
                       <thead>
@@ -4169,44 +4165,34 @@ function PartnerPortal({
 
 
 
-          {/* Merchant Controls */}
-          {activePage === 'p-controls' && (
+          {/* Merchant Details */}
+          {activePage === 'p-merchants' && (
             <div className="page active">
               <div className="page-inner">
-                <h3 style={{ fontSize: '20px', fontWeight: '700', marginBottom: '20px' }}>Merchant Portfolio Controls</h3>
+                <h3 style={{ fontSize: '20px', fontWeight: '700', marginBottom: '20px' }}>Merchant Details</h3>
+                <div style={{ marginBottom: '16px', display: 'flex', gap: '8px' }}>
+                  <input type="text" className="sp-input" placeholder="Search by Merchant Name or MID..." value={merchantSearch} onChange={(e) => setMerchantSearch(e.target.value)} style={{ maxWidth: '300px' }} />
+                </div>
                 <div className="table-responsive">
                   <table className="data-table">
-                    <thead><tr><th>Merchant Name</th><th>Username</th><th>Disputes</th><th>Open</th><th>Won</th><th>Lost</th><th>VAMP Ratio</th><th>Risk Level</th><th>Actions</th></tr></thead>
+                    <thead><tr><th>Merchant Name</th><th>MID</th><th>TID</th><th>Status</th><th>Actions</th></tr></thead>
                     <tbody>
-                      {[
-                        { name: 'masteruser', username: 'masteruser', d: 35, o: 8, w: 18, l: 5, vamp: '0.9%', risk: 'low' },
-                        { name: 'Myntra India', username: 'myntra_in', d: 64, o: 18, w: 40, l: 6, vamp: '1.1%', risk: 'low' },
-                        { name: 'Flipkart Retail', username: 'flipkart_re', d: 127, o: 38, w: 72, l: 17, vamp: '2.5%', risk: 'high' },
-                        { name: 'Zomato Services', username: 'zomato_svc', d: 33, o: 8, w: 22, l: 3, vamp: '0.7%', risk: 'low' },
-                        { name: 'Paytm Mall', username: 'paytm_mall', d: 89, o: 27, w: 51, l: 11, vamp: '1.8%', risk: 'medium' },
-                        { name: 'Swiggy Instamart', username: 'swiggy_im', d: 29, o: 6, w: 18, l: 5, vamp: '0.8%', risk: 'low' },
-                        { name: 'Ola Electric', username: 'ola_elec', d: 15, o: 4, w: 9, l: 2, vamp: '0.6%', risk: 'low' },
-                        { name: 'Reliance Digital', username: 'reliance_dg', d: 48, o: 12, w: 31, l: 5, vamp: '1.3%', risk: 'medium' },
-                      ].map((m, i) => (
-                        <tr key={i}>
+                      {users && users.filter(u => u.role === 'merchant' && (!merchantSearch || u.name.toLowerCase().includes(merchantSearch.toLowerCase()) || u.id.toLowerCase().includes(merchantSearch.toLowerCase()))).map(m => (
+                        <tr key={m.id}>
                           <td style={{ fontWeight: '600' }}>{m.name}</td>
-                          <td className="mono" style={{ fontSize: '11px' }}>{m.username}</td>
-                          <td>{m.d}</td>
-                          <td><span style={{ color: m.o > 20 ? 'var(--red)' : 'var(--yellow)', fontWeight: '600' }}>{m.o}</span></td>
-                          <td><span style={{ color: 'var(--green)', fontWeight: '600' }}>{m.w}</span></td>
-                          <td><span style={{ color: 'var(--red)', fontWeight: '600' }}>{m.l}</span></td>
-                          <td style={{ color: m.risk === 'high' ? 'var(--red)' : m.risk === 'medium' ? 'var(--yellow)' : 'var(--green)', fontWeight: 'bold' }}>{m.vamp}</td>
+                          <td className="mono" style={{ fontSize: '11px' }}>{m.id}</td>
+                          <td className="mono" style={{ fontSize: '11px' }}>{m.tid || '10515104'}</td>
                           <td>
-                            <span className={`badge ${m.risk === 'high' ? 'badge-lost' : m.risk === 'medium' ? 'badge-progress' : 'badge-won'}`}>
-                              {m.risk === 'high' ? '🔴 High' : m.risk === 'medium' ? '🟡 Medium' : '🟢 Low'}
-                            </span>
+                            <span className="badge badge-won">Active</span>
                           </td>
                           <td>
-                            <button className="btn btn-sm btn-outline" style={{marginRight: '8px'}} onClick={() => showToast(`Tier updated for ${m.name}`)}>Change Tier</button>
-                            <button className="btn btn-sm btn-warning" onClick={() => showToast(`${m.name} suspended`, 'warning')}>Suspend</button>
+                            <button className="btn btn-sm btn-outline" onClick={() => { setTargetUserId(m.id); setActiveModal('merchantDetails'); }}>View</button>
                           </td>
                         </tr>
                       ))}
+                      {(!users || users.filter(u => u.role === 'merchant' && (!merchantSearch || u.name.toLowerCase().includes(merchantSearch.toLowerCase()) || u.id.toLowerCase().includes(merchantSearch.toLowerCase()))).length === 0) && (
+                        <tr><td colSpan="5" style={{ textAlign: 'center', padding: '24px', color: 'var(--text-muted)' }}>No merchants found</td></tr>
+                      )}
                     </tbody>
                   </table>
                 </div>
@@ -4312,7 +4298,60 @@ function PartnerPortal({
             </div>
           )}
 
-        </main>
+          {/* Partner Merchant Details Modal */}
+          {activeModal === 'merchantDetails' && (
+            <div className="overlay open">
+              {(() => {
+                const user = users?.find(c => c.id === targetUserId) || {};
+                return (
+                  <div className="modal" style={{ width: '90%', maxWidth: '800px', padding: '0', borderRadius: '4px', overflow: 'hidden', fontFamily: 'Arial, sans-serif', display: 'flex', flexDirection: 'column', maxHeight: '90vh' }}>
+                    <div style={{ padding: '12px 20px', borderBottom: '1px solid #e0e0e0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0 }}>
+                      <h2 style={{ fontSize: '14px', fontWeight: 'bold', margin: 0, color: '#000' }}>{user.name} - Details</h2>
+                      <button onClick={() => setActiveModal(null)} style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#9e9e9e' }}>&times;</button>
+                    </div>
+                    
+                    <div style={{ padding: '0', overflowY: 'auto', flex: 1 }}>
+                      <div style={{ padding: '12px 20px', background: '#fff', borderBottom: '1px solid #eee', fontWeight: 'bold', fontSize: '13px', color: '#000' }}>
+                        Merchant Profile
+                      </div>
+                      
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', padding: '20px', fontSize: '12px', background: '#fff' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}><span style={{ color: '#9e9e9e' }}>Merchant Name:</span> <strong style={{color: '#000', width: '180px'}}>{user.name}</strong></div>
+                          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}><span style={{ color: '#9e9e9e' }}>MID:</span> <strong style={{color: '#000', width: '180px'}}>{user.id}</strong></div>
+                          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}><span style={{ color: '#9e9e9e' }}>TID:</span> <strong style={{color: '#000', width: '180px'}}>{user.tid || '10515104'}</strong></div>
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}><span style={{ color: '#9e9e9e' }}>Status:</span> <strong style={{color: '#000', width: '180px'}}>Active</strong></div>
+                          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}><span style={{ color: '#9e9e9e' }}>Role:</span> <strong style={{color: '#000', width: '180px'}}>Merchant</strong></div>
+                          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}><span style={{ color: '#9e9e9e' }}>Onboarding Date:</span> <strong style={{color: '#000', width: '180px'}}>2023-01-15</strong></div>
+                        </div>
+                      </div>
+
+                      <div style={{ padding: '12px 20px', background: '#fff', borderTop: '1px solid #eee', borderBottom: '1px solid #eee', fontWeight: 'bold', fontSize: '13px', color: '#000' }}>
+                        Business Information
+                      </div>
+                      
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', padding: '20px', fontSize: '12px', background: '#fff' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}><span style={{ color: '#9e9e9e' }}>Business Type:</span> <strong style={{color: '#000', width: '180px'}}>E-Commerce</strong></div>
+                          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}><span style={{ color: '#9e9e9e' }}>Contact Email:</span> <strong style={{color: '#000', width: '180px'}}>admin@{user.id?.toLowerCase()}.com</strong></div>
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}><span style={{ color: '#9e9e9e' }}>Contact Phone:</span> <strong style={{color: '#000', width: '180px'}}>+91 98765 43210</strong></div>
+                          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}><span style={{ color: '#9e9e9e' }}>Address:</span> <strong style={{color: '#000', width: '180px'}}>Mumbai, India</strong></div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div style={{ padding: '12px 20px', borderTop: '1px solid #e0e0e0', display: 'flex', justifyContent: 'flex-end', alignItems: 'center', background: '#fff', flexShrink: 0 }}>
+                      <button onClick={() => setActiveModal(null)} style={{ padding: '8px 24px', border: '1px solid #5e35b1', background: '#fff', color: '#5e35b1', borderRadius: '4px', cursor: 'pointer', fontSize: '13px', fontWeight: 'bold' }}>Close</button>
+                    </div>
+                  </div>
+                );
+              })()}
+            </div>
+          )}
       </div>
     </div>
   );
