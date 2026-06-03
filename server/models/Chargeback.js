@@ -14,7 +14,8 @@ const documentEntrySchema = new mongoose.Schema({
   uploadedAt: { type: String, required: true },
   status: { type: String, default: 'Pending Review' },
   rejectionRemarks: { type: String, default: '' },
-  rejectedAt: { type: String, default: null }
+  rejectedAt: { type: String, default: null },
+  uploadedBy: { type: String, default: 'Merchant' }
 });
 
 const chargebackSchema = new mongoose.Schema({

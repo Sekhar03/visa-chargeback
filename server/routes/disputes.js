@@ -212,6 +212,66 @@ router.post('/:id/action', async (req, res) => {
       dispute.adminAction = 'visa_review';
       dispute.visaPending = true;
       dispute.timeline.unshift({ by: req.headers['x-user-name'] || 'System', time: new Date().toISOString(), title: 'Sent to Visa for Review', remarks: 'Admin disagrees with merchant submission. Case escalated to Visa for review.', file: null });
+    } else if (action === 'admin_upload_evidence') {
+      dispute.mSubStatus = 'Document Pending from Merchant';
+      dispute.adminAction = 'evidence_uploaded';
+      dispute.merchantAction = 'pending_admin_review';
+      
+      let fileString = null;
+      if (Array.isArray(evidence)) {
+        evidence.forEach((filename, idx) => {
+          dispute.documents.push({
+            id: 'doc_' + Date.now() + '_' + idx,
+            filename: filename,
+            uploadedAt: new Date().toISOString(),
+            status: 'Pending Review',
+            uploadedBy: 'Admin'
+          });
+        });
+        fileString = evidence.join(', ');
+      } else if (evidence) {
+        dispute.documents.push({
+          id: 'doc_' + Date.now(),
+          filename: evidence,
+          uploadedAt: new Date().toISOString(),
+          status: 'Pending Review',
+          uploadedBy: 'Admin'
+        });
+        fileString = evidence;
+      }
+      
+      dispute.timeline.unshift({ by: req.headers['x-user-name'] || 'Admin', time: new Date().toISOString(), title: 'Admin Evidence Uploaded', remarks: comments || 'Admin uploaded documents for merchant review.', file: fileString });
+    } else if (action === 'merchant_accept_admin') {
+      dispute.mSubStatus = 'Document Pending Verification';
+      dispute.merchantAction = 'accepted_admin';
+      dispute.adminAction = null; // Send back to admin for final Visa routing
+      
+      // Update all pending Admin docs to Accepted
+      dispute.documents.forEach(doc => {
+        if (doc.uploadedBy === 'Admin' && doc.status === 'Pending Review') {
+          doc.status = 'Accepted';
+        }
+      });
+      
+      dispute.timeline.unshift({ by: req.headers['x-user-name'] || 'Merchant', time: new Date().toISOString(), title: 'Merchant Accepted Admin Evidence', remarks: 'Merchant accepted the Admin documents. Case routed to Admin for final submission.', file: null });
+    } else if (action === 'merchant_reject_admin') {
+      dispute.mSubStatus = 'Document Pending Verification';
+      dispute.merchantAction = 'rejected_admin';
+      dispute.adminAction = null;
+      
+      const { rejectedDocs } = req.body;
+      if (Array.isArray(rejectedDocs)) {
+        rejectedDocs.forEach(rdoc => {
+          const doc = dispute.documents.find(d => d.id === rdoc.id && d.uploadedBy === 'Admin');
+          if (doc) {
+            doc.status = 'Rejected';
+            doc.rejectionRemarks = rdoc.remarks;
+            doc.rejectedAt = new Date().toISOString();
+          }
+        });
+      }
+      
+      dispute.timeline.unshift({ by: req.headers['x-user-name'] || 'Merchant', time: new Date().toISOString(), title: 'Merchant Rejected Admin Evidence', remarks: comments || 'Merchant rejected Admin evidence.', file: null });
     }
 
     const updated = await dispute.save();

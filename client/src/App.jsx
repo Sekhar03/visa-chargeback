@@ -536,7 +536,19 @@ function MerchantPortal({
   const [raisedSearchInput, setRaisedSearchInput] = useState('');
 
   // Compute Merchant Disputes
+  // Compute Merchant Disputes
   const merchantDisputes = chargebacks.filter(cb => cb.userName === currentUser.username);
+  
+  const actionRequiredDisputes = merchantDisputes.filter(cb => 
+    !cb.merchantAction || 
+    cb.merchantAction === 'rejected' || 
+    cb.merchantAction === 'additional_evidence'
+  );
+  
+  const pendingVerificationDisputes = merchantDisputes.filter(cb => 
+    (cb.merchantAction === 'evidence' || cb.merchantAction === 'accepted_admin' || cb.merchantAction === 'rejected_admin') && 
+    (cb.adminAction === null || cb.adminAction === 'evidence_uploaded')
+  );
 
   // Dashboard calculations
   const getFilteredDashboardDisputes = () => {
@@ -1652,7 +1664,7 @@ function MerchantPortal({
                     <div>
                       <div className="tbl-toolbar">
                         <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
-                          {merchantDisputes.filter(cb => !cb.merchantAction || cb.merchantAction === 'additional_evidence').length} pending
+                          {actionRequiredDisputes.length} pending
                         </span>
                       </div>
                       <div className="tbl-wrap">
@@ -1672,7 +1684,7 @@ function MerchantPortal({
                             </tr>
                           </thead>
                           <tbody>
-                            {merchantDisputes.filter(cb => !cb.merchantAction || cb.merchantAction === 'additional_evidence').map(cb => (
+                            {actionRequiredDisputes.map(cb => (
                               <tr key={cb.id} style={{ borderBottom: '1px solid #eee' }}>
                                 <td style={{ padding: '12px 16px', color: '#50BDC9', fontWeight: '600' }}>{cb.caseId}</td>
                                 <td style={{ padding: '12px 16px', color: '#333' }}>{cb.rrn}</td>
@@ -1694,7 +1706,7 @@ function MerchantPortal({
                                 </td>
                               </tr>
                             ))}
-                            {merchantDisputes.filter(cb => !cb.merchantAction || cb.merchantAction === 'additional_evidence').length === 0 && (
+                            {actionRequiredDisputes.length === 0 && (
                               <tr><td colSpan="10" style={{ textAlign: 'center', padding: '24px', color: 'var(--text-muted)' }}>✅ No pending documents</td></tr>
                             )}
                           </tbody>
@@ -1708,7 +1720,7 @@ function MerchantPortal({
                     <div>
                       <div className="tbl-toolbar">
                         <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
-                          {merchantDisputes.filter(cb => cb.merchantAction === 'evidence').length} awaiting verification
+                          {pendingVerificationDisputes.length} awaiting verification
                         </span>
                       </div>
                       <div className="tbl-wrap">
@@ -1728,7 +1740,7 @@ function MerchantPortal({
                             </tr>
                           </thead>
                           <tbody>
-                            {merchantDisputes.filter(cb => cb.merchantAction === 'evidence').map(cb => (
+                            {pendingVerificationDisputes.map(cb => (
                               <tr key={cb.id} style={{ borderBottom: '1px solid #eee' }}>
                                 <td style={{ padding: '12px 16px', color: '#50BDC9', fontWeight: '600' }}>{cb.caseId}</td>
                                 <td style={{ padding: '12px 16px', color: '#333' }}>{cb.rrn}</td>
@@ -1750,7 +1762,7 @@ function MerchantPortal({
                                 </td>
                               </tr>
                             ))}
-                            {merchantDisputes.filter(cb => cb.merchantAction === 'evidence').length === 0 && (
+                            {pendingVerificationDisputes.length === 0 && (
                               <tr><td colSpan="11" style={{ textAlign: 'center', padding: '24px', color: 'var(--text-muted)' }}>No documents pending verification</td></tr>
                             )}
                           </tbody>
@@ -1862,6 +1874,11 @@ function MerchantPortal({
                             {doc.status === 'Rejected' && (
                               <div style={{ fontSize: '11px', color: '#ff4d4f', marginTop: '6px', padding: '6px', background: '#fff1f0', borderRadius: '4px' }}>
                                 <strong>Remarks:</strong> {doc.rejectionRemarks}
+                                <div style={{ marginTop: '8px' }}>
+                                  <button style={{ fontSize: '11px', background: '#ff4d4f', color: '#fff', border: 'none', padding: '4px 8px', borderRadius: '4px', cursor: 'pointer' }} onClick={() => setActiveModal('contest')}>
+                                    Re-upload
+                                  </button>
+                                </div>
                               </div>
                             )}
                           </div>
@@ -1876,7 +1893,23 @@ function MerchantPortal({
                 <div style={{ padding: '12px 20px', borderTop: '1px solid #e0e0e0', display: 'flex', justifyContent: 'flex-end', alignItems: 'center', background: '#fff', flexShrink: 0, zIndex: 10 }}>
                   <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
                     <button onClick={() => setActiveModal(null)} style={{ padding: '6px 16px', border: '1px solid #50BDC9', background: '#fff', color: '#50BDC9', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}>Close</button>
-                    {getActionBtn(cb)}
+                    {reportTab === 'doc-pending' && (
+                      <>
+                        <button className="btn btn-outline" style={{ padding: '6px 16px', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }} onClick={() => { setActiveModal('action2'); }}>Accept Loss</button>
+                        <button className="btn btn-primary" style={{ padding: '6px 16px', borderRadius: '4px', cursor: 'pointer', fontSize: '12px', background: '#1890ff', color: '#fff', border: 'none' }} onClick={() => { setActiveModal('contest'); }}>Upload Evidence</button>
+                      </>
+                    )}
+                    {reportTab === 'doc-verification' && (cb.adminAction === 'evidence_uploaded' || (cb.documents && cb.documents.some(d => d.uploadedBy === 'Admin' && d.status === 'Pending Review'))) && (
+                      <>
+                        <button className="btn btn-danger" style={{ padding: '6px 16px', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }} onClick={() => handleMerchantRejectAdminClick(cb.id)}>Reject Admin Evidence</button>
+                        <button className="btn btn-outline" style={{ padding: '6px 16px', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }} onClick={() => { setActiveModal('contest'); }}>Upload Additional Evidence</button>
+                        <button className="btn btn-primary" style={{ padding: '6px 16px', borderRadius: '4px', cursor: 'pointer', fontSize: '12px', background: '#52c41a', color: '#fff', border: 'none' }} onClick={() => submitMerchantAcceptAdmin(cb.id)}>Accept Admin Evidence</button>
+                      </>
+                    )}
+                    {reportTab === 'doc-verification' && cb.adminAction !== 'evidence_uploaded' && !(cb.documents && cb.documents.some(d => d.uploadedBy === 'Admin' && d.status === 'Pending Review')) && (
+                      <span className="badge badge-progress" style={{ padding: '6px 16px', borderRadius: '4px', fontSize: '12px' }}>Pending Admin Verification</span>
+                    )}
+                    {reportTab !== 'doc-pending' && reportTab !== 'doc-verification' && getActionBtn(cb)}
                   </div>
                 </div>
               </div>
@@ -2392,6 +2425,106 @@ function AdminPortal({
       }
     } catch (err) {
       console.error(err);
+      showToast('API error', 'error');
+    }
+  };
+
+  const handleAdminUploadClick = (disputeId) => {
+    setTargetDisputeId(disputeId);
+    setEvidenceFiles({ 1: null });
+    setActiveModal('adminUploadEvidence');
+  };
+
+  const submitAdminUploadEvidence = async () => {
+    if (!evidenceFiles[1]) {
+      showToast('Please select a file to upload', 'error');
+      return;
+    }
+    const id = targetDisputeId;
+    if (!id) return;
+
+    try {
+      const evidenceName = evidenceFiles[1].name;
+      const response = await fetch(`${API_URL}/disputes/${id}/action`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-user-role': 'admin', 'x-user-name': currentUser?.username || 'nsdladmin' },
+        body: JSON.stringify({
+          action: 'admin_upload_evidence',
+          evidence: evidenceName
+        })
+      });
+
+      if (response.ok) {
+        setActiveModal(null);
+        showToast('Evidence uploaded to merchant successfully', 'success');
+        refreshAllData();
+      } else {
+        const errorData = await response.json();
+        showToast(errorData.message || 'Action failed', 'error');
+      }
+    } catch (err) {
+      console.error(err);
+      showToast('API error', 'error');
+    }
+  };
+
+  const submitMerchantAcceptAdmin = async (id) => {
+    try {
+      const response = await fetch(`${API_URL}/disputes/${id}/action`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-user-role': 'merchant', 'x-user-name': currentUser?.username },
+        body: JSON.stringify({ action: 'merchant_accept_admin' })
+      });
+      if (response.ok) {
+        showToast('Admin evidence accepted. Case forwarded.', 'success');
+        refreshAllData();
+      } else {
+        const err = await response.json();
+        showToast(err.message, 'error');
+      }
+    } catch (error) {
+      showToast('API error', 'error');
+    }
+  };
+
+  const handleMerchantRejectAdminClick = (id) => {
+    setTargetDisputeId(id);
+    setSelectedDocsToReject([]);
+    setRejectionRemarks('');
+    setActiveModal('merchantRejectAdminDocs');
+  };
+
+  const submitMerchantRejectAdminDocs = async () => {
+    if (selectedDocsToReject.length === 0) {
+      showToast('Please select at least one document to reject', 'error');
+      return;
+    }
+    if (!rejectionRemarks.trim()) {
+      showToast('Rejection remarks are mandatory', 'error');
+      return;
+    }
+    const id = targetDisputeId;
+    if (!id) return;
+
+    try {
+      const response = await fetch(`${API_URL}/disputes/${id}/action`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-user-role': 'merchant', 'x-user-name': currentUser?.username },
+        body: JSON.stringify({
+          action: 'merchant_reject_admin',
+          comments: rejectionRemarks,
+          rejectedDocs: selectedDocsToReject.map(docId => ({ id: docId, remarks: rejectionRemarks }))
+        })
+      });
+      if (response.ok) {
+        setActiveModal(null);
+        showToast('Admin documents rejected', 'success');
+        refreshAllData();
+      } else {
+        const err = await response.json();
+        showToast(err.message, 'error');
+      }
+    } catch (err) {
       showToast('API error', 'error');
     }
   };
@@ -3688,6 +3821,7 @@ function AdminPortal({
                     <>
                       <button type="button" className="btn btn-danger" style={{ flex: 1, minWidth: '140px' }} onClick={() => handleArbitrationLost(cb.id)}>Accept Loss (Send to Visa)</button>
                       <button type="button" className="btn btn-warning" style={{ flex: 1, minWidth: '140px', background: '#eab308', color: '#fff', border: 'none' }} onClick={() => handleDeclineClick(cb.id)}>Decline & Send to Merchant</button>
+                      <button type="button" className="btn btn-primary" style={{ flex: 1, minWidth: '140px', background: '#1890ff', color: '#fff', border: 'none' }} onClick={() => handleAdminUploadClick(cb.id)}>Upload Evidence for Merchant</button>
                       <button type="button" className="btn btn-secondary" onClick={() => setActiveModal(null)}>Cancel</button>
                     </>
                   ) : (
@@ -3718,6 +3852,71 @@ function AdminPortal({
                 </div>
                 <div className="modal-footer">
                   <button className="btn btn-secondary" style={{ width: '100%' }} onClick={() => setActiveModal('disputeDetails')}>Back</button>
+                </div>
+              </div>
+            );
+          })()}
+        </div>
+      )}
+
+      {activeModal === 'adminUploadEvidence' && (
+        <div className="overlay open">
+          <div className="modal">
+            <div className="modal-hdr"><h3>Upload Evidence for Merchant</h3><button className="modal-close" onClick={() => setActiveModal(null)}>✕</button></div>
+            <div className="modal-body">
+              <div style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '16px' }}>Upload evidence documents to send back to the merchant for their review and acceptance.</div>
+              <div style={{ marginBottom: '16px' }}>
+                <label style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '6px', display: 'block' }}>Select Document (Max 20MB, PDF/JPG/PNG)</label>
+                <input type="file" className="form-control" onChange={(e) => setEvidenceFiles({ 1: e.target.files?.[0] || null })} />
+              </div>
+            </div>
+            <div className="modal-footer" style={{ display: 'flex', gap: '10px' }}>
+              <button className="btn btn-secondary" style={{ flex: 1 }} onClick={() => setActiveModal(null)}>Cancel</button>
+              <button className="btn btn-primary" style={{ flex: 2, background: '#1890ff', color: '#fff', border: 'none' }} onClick={() => submitAdminUploadEvidence()}>Upload & Send</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {activeModal === 'merchantRejectAdminDocs' && (
+        <div className="overlay open">
+          {(() => {
+            const cb = chargebacks.find(x => x.id === targetDisputeId);
+            if (!cb) return null;
+            return (
+              <div className="modal">
+                <div className="modal-hdr"><h3>Reject Admin Evidence</h3><button className="modal-close" onClick={() => setActiveModal(null)}>✕</button></div>
+                <div className="modal-body">
+                  <div style={{ fontSize: '13px', fontWeight: '600', marginBottom: '10px' }}>Select admin documents to reject:</div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '16px' }}>
+                    {(cb.documents || []).filter(d => d.uploadedBy === 'Admin' && d.status === 'Pending Review').map(doc => (
+                      <label key={doc.id} style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px' }}>
+                        <input 
+                          type="checkbox" 
+                          checked={selectedDocsToReject.includes(doc.id)} 
+                          onChange={(e) => {
+                            if (e.target.checked) setSelectedDocsToReject([...selectedDocsToReject, doc.id]);
+                            else setSelectedDocsToReject(selectedDocsToReject.filter(id => id !== doc.id));
+                          }}
+                        />
+                        📄 {doc.filename}
+                      </label>
+                    ))}
+                  </div>
+                  
+                  <div style={{ fontSize: '13px', fontWeight: '600', marginBottom: '6px' }}>Rejection Remarks (Mandatory):</div>
+                  <textarea 
+                    className="mfi" 
+                    placeholder="Enter reason for rejecting admin's evidence..." 
+                    value={rejectionRemarks}
+                    onChange={(e) => setRejectionRemarks(e.target.value)}
+                    rows={4}
+                    style={{ width: '100%', resize: 'vertical' }}
+                  ></textarea>
+                </div>
+                <div className="modal-footer" style={{ display: 'flex', gap: '10px' }}>
+                  <button className="btn btn-secondary" style={{ flex: 1 }} onClick={() => setActiveModal(null)}>Cancel</button>
+                  <button className="btn btn-danger" style={{ flex: 2 }} onClick={() => submitMerchantRejectAdminDocs()}>Submit Rejection</button>
                 </div>
               </div>
             );
