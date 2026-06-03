@@ -3611,6 +3611,7 @@ function AdminPortal({
                       <div style={{ color: 'var(--text-muted)', fontSize: '13px' }}>No previous evidence uploaded.</div>
                     )}
                   </div>
+                </div>
                 
                 <div style={{ padding: '12px 20px', borderTop: '1px solid #e0e0e0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#fff', flexShrink: 0, zIndex: 10, flexWrap: 'wrap', gap: '12px' }}>
                   {adminTab === 'merchant-pending' ? (
