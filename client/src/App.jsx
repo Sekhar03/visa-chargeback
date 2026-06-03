@@ -2075,6 +2075,7 @@ function AdminPortal({
   const [visaAcceptedAmount, setVisaAcceptedAmount] = useState('');
   const [visaRemarks, setVisaRemarks] = useState('');
   const [visaEvidenceFile, setVisaEvidenceFile] = useState(null);
+  const [adminDisputeAction, setAdminDisputeAction] = useState('full');
 
   // Form states
   const [selectedProvider, setSelectedProvider] = useState('');
@@ -3594,45 +3595,51 @@ function AdminPortal({
                   </div>
 
                   {/* Previous Documents */}
-                  {adminTab !== 'merchant-pending' && (
-                    <>
-                      <div style={{ padding: '12px 20px', background: '#fff', borderTop: '1px solid #eee', borderBottom: '1px solid #eee', fontWeight: 'bold', fontSize: '13px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: '#000' }}>
-                        <span>Previous Documents</span>
-                        <button style={{ background: '#50BDC9', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}>Download All Docs</button>
+                  <div style={{ padding: '12px 20px', background: '#fff', borderTop: '1px solid #eee', borderBottom: '1px solid #eee', fontWeight: 'bold', fontSize: '13px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: '#000' }}>
+                    <span>Previous Documents</span>
+                    <button style={{ background: '#50BDC9', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}>Download All Docs</button>
+                  </div>
+                  <div style={{ padding: '20px', display: 'flex', gap: '16px', overflowX: 'auto', background: '#fff' }}>
+                    {cb.timeline && cb.timeline.filter(t => t.file).map((t, i) => (
+                      <div key={i} style={{ width: '200px', padding: '12px', border: '2px solid #e0e0e0', borderTop: '4px solid #d1c4e9', borderRadius: '4px', flexShrink: 0, display: 'flex', flexDirection: 'column', color: '#333', background: '#fafafa' }}>
+                        <div style={{ fontWeight: 'bold', fontSize: '12px', marginBottom: '8px', wordBreak: 'break-all' }}>{t.file}</div>
+                        <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Uploaded By: {t.by}</div>
+                        <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Date: {new Date(t.time).toLocaleDateString()}</div>
                       </div>
-                      
-                      <div style={{ padding: '20px', display: 'flex', gap: '16px', overflowX: 'auto', background: '#fff' }}>
-                        {[1, 2, 3, 4].map(i => (
-                          <div key={i} style={{ width: '120px', height: '80px', border: '2px solid #e0e0e0', borderTop: '4px solid #d1c4e9', borderRadius: '4px', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#d1c4e9', background: '#fafafa' }}>
-                          </div>
-                        ))}
-                      </div>
-                    </>
-                  )}
-                </div>
+                    ))}
+                    {(!cb.timeline || cb.timeline.filter(t => t.file).length === 0) && (
+                      <div style={{ color: 'var(--text-muted)', fontSize: '13px' }}>No previous evidence uploaded.</div>
+                    )}
+                  </div>
                 
                 <div style={{ padding: '12px 20px', borderTop: '1px solid #e0e0e0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#fff', flexShrink: 0, zIndex: 10, flexWrap: 'wrap', gap: '12px' }}>
                   {adminTab === 'merchant-pending' ? (
                     <>
-                          <div style={{ flex: 1 }}>
-                        <select style={{ padding: '8px 12px', border: '1px solid #e0e0e0', borderRadius: '4px', fontSize: '13px', width: '250px', outline: 'none' }}>
+                      <div style={{ flex: 1 }}>
+                        <select 
+                          style={{ padding: '8px 12px', border: '1px solid #e0e0e0', borderRadius: '4px', fontSize: '13px', width: '250px', outline: 'none' }}
+                          value={adminDisputeAction}
+                          onChange={(e) => setAdminDisputeAction(e.target.value)}
+                        >
                           <option value="full">Dispute Accepted - Full</option>
                           <option value="partial">Dispute Accepted - Partial</option>
                           <option value="declined">Dispute Declined</option>
                         </select>
-                        <button className="btn btn-sm btn-primary" style={{ marginLeft: '12px' }} onClick={() => { setActiveModal('remarks'); }}>
-                          Represent & Upload Evidence
-                        </button>
-                        <button className="btn btn-sm" style={{ background: '#0288d1', color: '#fff', marginLeft: '8px' }} onClick={() => handleAdminEscalate(targetDisputeId)}>
-                          Escalate to Pre-Arb
-                        </button>
-                        <button className="btn btn-sm" style={{ background: 'var(--purple)', color: '#fff', marginLeft: '8px' }} onClick={() => { setActiveModal('arbitration'); }}>
+                        <button className="btn btn-sm" style={{ background: 'var(--purple)', color: '#fff', marginLeft: '12px' }} onClick={() => { setActiveModal('arbitration'); }}>
                           Enter Visa Ruling
                         </button>
                       </div>
                       <div style={{ display: 'flex', gap: '12px' }}>
                         <button onClick={() => setActiveModal(null)} style={{ padding: '6px 16px', border: '1px solid #50BDC9', background: '#fff', color: '#50BDC9', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}>Cancel</button>
-                        <button style={{ padding: '6px 16px', border: 'none', background: '#50BDC9', color: '#fff', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}>Submit</button>
+                        <button onClick={() => {
+                          if (adminDisputeAction === 'full') {
+                            handleVisaAccept(cb.id);
+                          } else if (adminDisputeAction === 'partial') {
+                            setActiveModal('acceptPartially');
+                          } else if (adminDisputeAction === 'declined') {
+                            handleDecline(cb.id);
+                          }
+                        }} style={{ padding: '6px 16px', border: 'none', background: '#50BDC9', color: '#fff', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}>Submit</button>
                       </div>
                     </>
                   ) : adminTab === 'verification-pending' && isPendingVerification(cb) ? (
@@ -3823,8 +3830,9 @@ function AdminPortal({
                     <div style={{ fontWeight: 700, marginTop: '2px' }}>Amount: {formatINR(cb.adjAmt)}</div>
                   </div>
                 </div>
-                <div className="modal-footer" style={{ flexWrap: 'wrap' }}>
-                  <button className="btn btn-danger" style={{ flex: 1, minWidth: '100%' }} onClick={handleArbitrationLost}>Accept Loss & Send to Visa</button>
+                <div className="modal-footer" style={{ flexWrap: 'wrap', gap: '10px' }}>
+                  <button className="btn btn-primary" style={{ flex: 1, minWidth: '100%' }} onClick={() => handleVisaReview(cb.id)}>Submit to Visa</button>
+                  <button className="btn btn-danger" style={{ flex: 1, minWidth: '100%' }} onClick={() => handleArbitrationLost(cb.id)}>Accept Loss & Send to Visa</button>
                   <div style={{ width: '100%', textAlign: 'center', color: 'var(--text-muted)', fontSize: '12px', marginTop: '8px' }}>
                     Note: Admin cannot decide "Won" status. Final "Won" resolution will be provided by Visa.
                   </div>
