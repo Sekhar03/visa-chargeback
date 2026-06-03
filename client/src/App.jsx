@@ -3338,206 +3338,28 @@ function AdminPortal({
                       </tr>
                     </thead>
                     <tbody>
-                      <tr style={{ borderBottom: '1px solid #f5f5f5' }}>
-                        <td style={{ padding: '16px 24px', fontSize: '13px', fontWeight: '600', color: '#263238' }}>WH-VISA-551029</td>
-                        <td style={{ padding: '16px 24px' }}>
-                          <div style={{ fontSize: '13px', fontWeight: '600', color: '#546e7a', marginBottom: '4px' }}>DisputeCreatedEvent</div>
-                          <div style={{ fontSize: '11px', color: '#b0bec5' }}>2024-05-26 10:14:02</div>
-                        </td>
-                        <td style={{ padding: '16px 24px' }}>
-                          <span style={{ padding: '6px 12px', borderRadius: '4px', fontSize: '11px', fontWeight: '700', background: '#fff3e0', color: '#f57c00' }}>Chargeback</span>
-                        </td>
-                        <td style={{ padding: '16px 24px' }}>
-                          <div style={{ fontSize: '13px', fontWeight: '600', color: '#546e7a', marginBottom: '4px' }}>Nike India</div>
-                          <div style={{ fontSize: '12px', color: '#78909c' }}>INR 14,999</div>
-                        </td>
-                        <td style={{ padding: '16px 24px', fontSize: '12px', fontWeight: '700', color: '#4caf50' }}>200 OK</td>
-                        <td style={{ padding: '16px 24px', textAlign: 'right' }}>
-                          <button style={{ padding: '6px 16px', background: '#1a237e', color: '#fff', border: 'none', borderRadius: '4px', fontSize: '11px', fontWeight: '700', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
-                            <span>&gt;_</span> INSPECT
-                          </button>
-                        </td>
-                      </tr>
-                      <tr style={{ borderBottom: '1px solid #f5f5f5' }}>
-                        <td style={{ padding: '16px 24px', fontSize: '13px', fontWeight: '600', color: '#263238' }}>WH-VISA-551030</td>
-                        <td style={{ padding: '16px 24px' }}>
-                          <div style={{ fontSize: '13px', fontWeight: '600', color: '#546e7a', marginBottom: '4px' }}>PreArbitrationFili...</div>
-                          <div style={{ fontSize: '11px', color: '#b0bec5' }}>2024-05-15 10:15:02</div>
-                        </td>
-                        <td style={{ padding: '16px 24px' }}>
-                          <span style={{ padding: '6px 12px', borderRadius: '4px', fontSize: '11px', fontWeight: '700', background: '#e0f7fa', color: '#00acc1' }}>Pre-Arbitration</span>
-                        </td>
-                        <td style={{ padding: '16px 24px' }}>
-                          <div style={{ fontSize: '13px', fontWeight: '600', color: '#546e7a', marginBottom: '4px' }}>Steam Games</div>
-                          <div style={{ fontSize: '12px', color: '#78909c' }}>INR 3,250</div>
-                        </td>
-                        <td style={{ padding: '16px 24px', fontSize: '12px', fontWeight: '700', color: '#4caf50' }}>201 OK</td>
-                        <td style={{ padding: '16px 24px', textAlign: 'right' }}>
-                          <button style={{ padding: '6px 16px', background: '#1a237e', color: '#fff', border: 'none', borderRadius: '4px', fontSize: '11px', fontWeight: '700', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
-                            <span>&gt;_</span> INSPECT
-                          </button>
-                        </td>
-                      </tr>
-                      <tr style={{ borderBottom: '1px solid #f5f5f5' }}>
-                        <td style={{ padding: '16px 24px', fontSize: '13px', fontWeight: '600', color: '#263238' }}>WH-VISA-551031</td>
-                        <td style={{ padding: '16px 24px' }}>
-                          <div style={{ fontSize: '13px', fontWeight: '600', color: '#546e7a', marginBottom: '4px' }}>ArbitrationCaseFil...</div>
-                          <div style={{ fontSize: '11px', color: '#b0bec5' }}>2024-05-02 10:10:01</div>
-                        </td>
-                        <td style={{ padding: '16px 24px' }}>
-                          <span style={{ padding: '6px 12px', borderRadius: '4px', fontSize: '11px', fontWeight: '700', background: '#f3e5f5', color: '#8e24aa' }}>Arbitration</span>
-                        </td>
-                        <td style={{ padding: '16px 24px' }}>
-                          <div style={{ fontSize: '13px', fontWeight: '600', color: '#546e7a', marginBottom: '4px' }}>Reliance Retail</div>
-                          <div style={{ fontSize: '12px', color: '#78909c' }}>INR 22,450</div>
-                        </td>
-                        <td style={{ padding: '16px 24px', fontSize: '12px', fontWeight: '700', color: '#4caf50' }}>200 OK</td>
-                        <td style={{ padding: '16px 24px', textAlign: 'right' }}>
-                          <button style={{ padding: '6px 16px', background: '#1a237e', color: '#fff', border: 'none', borderRadius: '4px', fontSize: '11px', fontWeight: '700', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
-                            <span>&gt;_</span> INSPECT
-                          </button>
-                        </td>
-                      </tr>
-                      <tr>
-                        <td style={{ padding: '16px 24px', fontSize: '13px', fontWeight: '600', color: '#263238' }}>WH-VISA-551032</td>
-                        <td style={{ padding: '16px 24px' }}>
-                          <div style={{ fontSize: '13px', fontWeight: '600', color: '#546e7a', marginBottom: '4px' }}>RetrievalRequestIn...</div>
-                          <div style={{ fontSize: '11px', color: '#b0bec5' }}>2024-05-01 10:00:03</div>
-                        </td>
-                        <td style={{ padding: '16px 24px' }}>
-                          <span style={{ padding: '6px 12px', borderRadius: '4px', fontSize: '11px', fontWeight: '700', background: '#e0f2f1', color: '#00897b' }}>Retrieval Request</span>
-                        </td>
-                        <td style={{ padding: '16px 24px' }}>
-                          <div style={{ fontSize: '13px', fontWeight: '600', color: '#546e7a', marginBottom: '4px' }}>Nike India</div>
-                          <div style={{ fontSize: '12px', color: '#78909c' }}>INR 8,599</div>
-                        </td>
-                        <td style={{ padding: '16px 24px', fontSize: '12px', fontWeight: '700', color: '#4caf50' }}>200 OK</td>
-                        <td style={{ padding: '16px 24px', textAlign: 'right' }}>
-                          <button style={{ padding: '6px 16px', background: '#1a237e', color: '#fff', border: 'none', borderRadius: '4px', fontSize: '11px', fontWeight: '700', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
-                            <span>&gt;_</span> INSPECT
-                          </button>
-                        </td>
-                      </tr>
-                      <tr style={{ borderBottom: '1px solid #f5f5f5' }}>
-                        <td style={{ padding: '16px 24px', fontSize: '13px', fontWeight: '600', color: '#263238' }}>WH-VISA-551033</td>
-                        <td style={{ padding: '16px 24px' }}>
-                          <div style={{ fontSize: '13px', fontWeight: '600', color: '#546e7a', marginBottom: '4px' }}>FraudAlertNotificati...</div>
-                          <div style={{ fontSize: '11px', color: '#b0bec5' }}>2026-05-28 08:30:01</div>
-                        </td>
-                        <td style={{ padding: '16px 24px' }}>
-                          <span style={{ padding: '6px 12px', borderRadius: '4px', fontSize: '11px', fontWeight: '700', background: '#ffebee', color: '#c62828' }}>Fraud Alert</span>
-                        </td>
-                        <td style={{ padding: '16px 24px' }}>
-                          <div style={{ fontSize: '13px', fontWeight: '600', color: '#546e7a', marginBottom: '4px' }}>masteruser</div>
-                          <div style={{ fontSize: '12px', color: '#78909c' }}>INR 18,500</div>
-                        </td>
-                        <td style={{ padding: '16px 24px', fontSize: '12px', fontWeight: '700', color: '#4caf50' }}>200 OK</td>
-                        <td style={{ padding: '16px 24px', textAlign: 'right' }}>
-                          <button style={{ padding: '6px 16px', background: '#1a237e', color: '#fff', border: 'none', borderRadius: '4px', fontSize: '11px', fontWeight: '700', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
-                            <span>&gt;_</span> INSPECT
-                          </button>
-                        </td>
-                      </tr>
-                      <tr style={{ borderBottom: '1px solid #f5f5f5' }}>
-                        <td style={{ padding: '16px 24px', fontSize: '13px', fontWeight: '600', color: '#263238' }}>WH-VISA-551034</td>
-                        <td style={{ padding: '16px 24px' }}>
-                          <div style={{ fontSize: '13px', fontWeight: '600', color: '#546e7a', marginBottom: '4px' }}>DisputeResolvedEvent</div>
-                          <div style={{ fontSize: '11px', color: '#b0bec5' }}>2026-05-27 14:22:11</div>
-                        </td>
-                        <td style={{ padding: '16px 24px' }}>
-                          <span style={{ padding: '6px 12px', borderRadius: '4px', fontSize: '11px', fontWeight: '700', background: '#e8f5e9', color: '#2e7d32' }}>Won</span>
-                        </td>
-                        <td style={{ padding: '16px 24px' }}>
-                          <div style={{ fontSize: '13px', fontWeight: '600', color: '#546e7a', marginBottom: '4px' }}>Zomato Services</div>
-                          <div style={{ fontSize: '12px', color: '#78909c' }}>INR 6,200</div>
-                        </td>
-                        <td style={{ padding: '16px 24px', fontSize: '12px', fontWeight: '700', color: '#4caf50' }}>201 OK</td>
-                        <td style={{ padding: '16px 24px', textAlign: 'right' }}>
-                          <button style={{ padding: '6px 16px', background: '#1a237e', color: '#fff', border: 'none', borderRadius: '4px', fontSize: '11px', fontWeight: '700', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
-                            <span>&gt;_</span> INSPECT
-                          </button>
-                        </td>
-                      </tr>
-                      <tr style={{ borderBottom: '1px solid #f5f5f5' }}>
-                        <td style={{ padding: '16px 24px', fontSize: '13px', fontWeight: '600', color: '#263238' }}>WH-VISA-551035</td>
-                        <td style={{ padding: '16px 24px' }}>
-                          <div style={{ fontSize: '13px', fontWeight: '600', color: '#546e7a', marginBottom: '4px' }}>ArbitrationOutcomeFil...</div>
-                          <div style={{ fontSize: '11px', color: '#b0bec5' }}>2026-05-26 16:45:09</div>
-                        </td>
-                        <td style={{ padding: '16px 24px' }}>
-                          <span style={{ padding: '6px 12px', borderRadius: '4px', fontSize: '11px', fontWeight: '700', background: '#f3e5f5', color: '#8e24aa' }}>Arbitration</span>
-                        </td>
-                        <td style={{ padding: '16px 24px' }}>
-                          <div style={{ fontSize: '13px', fontWeight: '600', color: '#546e7a', marginBottom: '4px' }}>masteruser</div>
-                          <div style={{ fontSize: '12px', color: '#78909c' }}>INR 25,000</div>
-                        </td>
-                        <td style={{ padding: '16px 24px', fontSize: '12px', fontWeight: '700', color: '#ff9800' }}>⚠️ 408 Timeout</td>
-                        <td style={{ padding: '16px 24px', textAlign: 'right' }}>
-                          <button style={{ padding: '6px 16px', background: '#1a237e', color: '#fff', border: 'none', borderRadius: '4px', fontSize: '11px', fontWeight: '700', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
-                            <span>&gt;_</span> INSPECT
-                          </button>
-                        </td>
-                      </tr>
-                      <tr style={{ borderBottom: '1px solid #f5f5f5' }}>
-                        <td style={{ padding: '16px 24px', fontSize: '13px', fontWeight: '600', color: '#263238' }}>WH-VISA-551036</td>
-                        <td style={{ padding: '16px 24px' }}>
-                          <div style={{ fontSize: '13px', fontWeight: '600', color: '#546e7a', marginBottom: '4px' }}>PreArbitrationRespDue...</div>
-                          <div style={{ fontSize: '11px', color: '#b0bec5' }}>2026-05-25 09:10:00</div>
-                        </td>
-                        <td style={{ padding: '16px 24px' }}>
-                          <span style={{ padding: '6px 12px', borderRadius: '4px', fontSize: '11px', fontWeight: '700', background: '#e0f7fa', color: '#00acc1' }}>Pre-Arbitration</span>
-                        </td>
-                        <td style={{ padding: '16px 24px' }}>
-                          <div style={{ fontSize: '13px', fontWeight: '600', color: '#546e7a', marginBottom: '4px' }}>Paytm Mall</div>
-                          <div style={{ fontSize: '12px', color: '#78909c' }}>INR 11,200</div>
-                        </td>
-                        <td style={{ padding: '16px 24px', fontSize: '12px', fontWeight: '700', color: '#f44336' }}>❌ 500 Error</td>
-                        <td style={{ padding: '16px 24px', textAlign: 'right' }}>
-                          <button style={{ padding: '6px 16px', background: '#1a237e', color: '#fff', border: 'none', borderRadius: '4px', fontSize: '11px', fontWeight: '700', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
-                            <span>&gt;_</span> INSPECT
-                          </button>
-                        </td>
-                      </tr>
-                      <tr style={{ borderBottom: '1px solid #f5f5f5' }}>
-                        <td style={{ padding: '16px 24px', fontSize: '13px', fontWeight: '600', color: '#263238' }}>WH-VISA-551037</td>
-                        <td style={{ padding: '16px 24px' }}>
-                          <div style={{ fontSize: '13px', fontWeight: '600', color: '#546e7a', marginBottom: '4px' }}>VROLInquiryReceived...</div>
-                          <div style={{ fontSize: '11px', color: '#b0bec5' }}>2026-05-24 11:00:44</div>
-                        </td>
-                        <td style={{ padding: '16px 24px' }}>
-                          <span style={{ padding: '6px 12px', borderRadius: '4px', fontSize: '11px', fontWeight: '700', background: '#fff3e0', color: '#f57c00' }}>VROL Inquiry</span>
-                        </td>
-                        <td style={{ padding: '16px 24px' }}>
-                          <div style={{ fontSize: '13px', fontWeight: '600', color: '#546e7a', marginBottom: '4px' }}>Test@isu</div>
-                          <div style={{ fontSize: '12px', color: '#78909c' }}>INR 7,500</div>
-                        </td>
-                        <td style={{ padding: '16px 24px', fontSize: '12px', fontWeight: '700', color: '#4caf50' }}>200 OK</td>
-                        <td style={{ padding: '16px 24px', textAlign: 'right' }}>
-                          <button style={{ padding: '6px 16px', background: '#1a237e', color: '#fff', border: 'none', borderRadius: '4px', fontSize: '11px', fontWeight: '700', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
-                            <span>&gt;_</span> INSPECT
-                          </button>
-                        </td>
-                      </tr>
-                      <tr>
-                        <td style={{ padding: '16px 24px', fontSize: '13px', fontWeight: '600', color: '#263238' }}>WH-VISA-551038</td>
-                        <td style={{ padding: '16px 24px' }}>
-                          <div style={{ fontSize: '13px', fontWeight: '600', color: '#546e7a', marginBottom: '4px' }}>DisputeStatusUpdate...</div>
-                          <div style={{ fontSize: '11px', color: '#b0bec5' }}>2026-06-01 07:00:12</div>
-                        </td>
-                        <td style={{ padding: '16px 24px' }}>
-                          <span style={{ padding: '6px 12px', borderRadius: '4px', fontSize: '11px', fontWeight: '700', background: '#e0f2f1', color: '#00897b' }}>Status Update</span>
-                        </td>
-                        <td style={{ padding: '16px 24px' }}>
-                          <div style={{ fontSize: '13px', fontWeight: '600', color: '#546e7a', marginBottom: '4px' }}>Myntra Fashion</div>
-                          <div style={{ fontSize: '12px', color: '#78909c' }}>INR 9,200</div>
-                        </td>
-                        <td style={{ padding: '16px 24px', fontSize: '12px', fontWeight: '700', color: '#4caf50' }}>200 OK</td>
-                        <td style={{ padding: '16px 24px', textAlign: 'right' }}>
-                          <button style={{ padding: '6px 16px', background: '#1a237e', color: '#fff', border: 'none', borderRadius: '4px', fontSize: '11px', fontWeight: '700', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
-                            <span>&gt;_</span> INSPECT
-                          </button>
-                        </td>
-                      </tr>
+                      {webhookData.map((wh, idx) => (
+                        <tr key={idx} style={{ borderBottom: '1px solid #f5f5f5' }}>
+                          <td style={{ padding: '16px 24px', fontSize: '13px', fontWeight: '600', color: '#263238' }}>{wh.id}</td>
+                          <td style={{ padding: '16px 24px' }}>
+                            <div style={{ fontSize: '13px', fontWeight: '600', color: '#546e7a', marginBottom: '4px' }}>{wh.event}</div>
+                            <div style={{ fontSize: '11px', color: '#b0bec5' }}>{wh.time}</div>
+                          </td>
+                          <td style={{ padding: '16px 24px' }}>
+                            <span style={{ padding: '6px 12px', borderRadius: '4px', fontSize: '11px', fontWeight: '700', background: wh.typeBg, color: wh.typeColor }}>{wh.typeLabel}</span>
+                          </td>
+                          <td style={{ padding: '16px 24px' }}>
+                            <div style={{ fontSize: '13px', fontWeight: '600', color: '#546e7a', marginBottom: '4px' }}>{wh.merchant}</div>
+                            <div style={{ fontSize: '12px', color: '#78909c' }}>{wh.amount}</div>
+                          </td>
+                          <td style={{ padding: '16px 24px', fontSize: '12px', fontWeight: '700', color: wh.statusColor }}>{wh.status}</td>
+                          <td style={{ padding: '16px 24px', textAlign: 'right' }}>
+                            <button onClick={() => { setTargetWebhook(wh); setActiveModal('webhookInspect'); }} style={{ padding: '6px 16px', background: '#1a237e', color: '#fff', border: 'none', borderRadius: '4px', fontSize: '11px', fontWeight: '700', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                              <span>&gt;_</span> INSPECT
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
                     </tbody>
                   </table>
                 </div>
@@ -3901,6 +3723,63 @@ function AdminPortal({
               </div>
             );
           })()}
+        </div>
+      )}
+
+      {activeModal === 'webhookInspect' && targetWebhook && (
+        <div className="overlay open">
+          <div className="modal" style={{ width: '90%', maxWidth: '800px', padding: '0', borderRadius: '4px', overflow: 'hidden', fontFamily: 'Arial, sans-serif', display: 'flex', flexDirection: 'column', maxHeight: '90vh' }}>
+            <div style={{ padding: '12px 20px', borderBottom: '1px solid #e0e0e0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0, background: '#f8f9fa' }}>
+              <h2 style={{ fontSize: '14px', fontWeight: 'bold', margin: 0, color: '#000' }}>Webhook Inspect: {targetWebhook.id}</h2>
+              <button onClick={() => setActiveModal(null)} style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#9e9e9e' }}>&times;</button>
+            </div>
+            <div className="modal-body" style={{ padding: '20px', overflowY: 'auto', flex: 1 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '20px' }}>
+                <div>
+                  <div style={{ fontSize: '11px', fontWeight: 'bold', color: '#78909c', textTransform: 'uppercase', marginBottom: '4px' }}>Event</div>
+                  <div style={{ fontSize: '13px', fontWeight: '600', color: '#263238' }}>{targetWebhook.event}</div>
+                </div>
+                <div>
+                  <div style={{ fontSize: '11px', fontWeight: 'bold', color: '#78909c', textTransform: 'uppercase', marginBottom: '4px' }}>Time</div>
+                  <div style={{ fontSize: '13px', color: '#546e7a' }}>{targetWebhook.time}</div>
+                </div>
+                <div>
+                  <div style={{ fontSize: '11px', fontWeight: 'bold', color: '#78909c', textTransform: 'uppercase', marginBottom: '4px' }}>Merchant</div>
+                  <div style={{ fontSize: '13px', color: '#546e7a' }}>{targetWebhook.merchant}</div>
+                </div>
+                <div>
+                  <div style={{ fontSize: '11px', fontWeight: 'bold', color: '#78909c', textTransform: 'uppercase', marginBottom: '4px' }}>Status</div>
+                  <div style={{ fontSize: '13px', fontWeight: '600', color: '#4caf50' }}>{targetWebhook.status}</div>
+                </div>
+              </div>
+              <div style={{ fontSize: '12px', fontWeight: 'bold', color: '#263238', marginBottom: '8px' }}>Request Payload</div>
+              <pre style={{ background: '#263238', color: '#eceff1', padding: '16px', borderRadius: '4px', fontSize: '12px', overflowX: 'auto', marginBottom: '20px', fontFamily: 'monospace' }}>
+{JSON.stringify({
+  eventId: targetWebhook.id,
+  eventType: targetWebhook.event,
+  timestamp: targetWebhook.time,
+  data: {
+    merchantId: "M_" + targetWebhook.merchant.replace(" ", "").toUpperCase(),
+    amount: targetWebhook.amount,
+    currency: "INR",
+    disputeType: targetWebhook.typeLabel
+  }
+}, null, 2)}
+              </pre>
+              <div style={{ fontSize: '12px', fontWeight: 'bold', color: '#263238', marginBottom: '8px' }}>Response Payload</div>
+              <pre style={{ background: '#f5f5f5', color: '#333', padding: '16px', borderRadius: '4px', fontSize: '12px', overflowX: 'auto', border: '1px solid #e0e0e0', fontFamily: 'monospace' }}>
+{JSON.stringify({
+  status: "success",
+  code: parseInt(targetWebhook.status) || 200,
+  message: "Webhook processed successfully",
+  processedAt: new Date().toISOString()
+}, null, 2)}
+              </pre>
+            </div>
+            <div style={{ padding: '12px 20px', borderTop: '1px solid #e0e0e0', display: 'flex', justifyContent: 'flex-end', alignItems: 'center', background: '#fff', flexShrink: 0 }}>
+              <button onClick={() => setActiveModal(null)} style={{ padding: '8px 24px', border: '1px solid #50BDC9', background: '#fff', color: '#50BDC9', borderRadius: '4px', cursor: 'pointer', fontSize: '13px', fontWeight: 'bold' }}>Close</button>
+            </div>
+          </div>
         </div>
       )}
     </div>
