@@ -726,13 +726,19 @@ function MerchantPortal({
         headers['x-user-name'] = currentUser.username;
       }
 
+      const uploadedDocs = [];
+      if (evidenceFiles[1]) uploadedDocs.push(evidenceFiles[1].name || evidenceFiles[1]);
+      if (evidenceFiles[2]) uploadedDocs.push(evidenceFiles[2].name || evidenceFiles[2]);
+      if (evidenceFiles[3]) uploadedDocs.push(evidenceFiles[3].name || evidenceFiles[3]);
+      if (uploadedDocs.length === 0) uploadedDocs.push('EvidenceSubmitted.pdf');
+
       const response = await fetch(`${API_URL}/disputes/${targetDisputeId}/action`, {
         method: 'POST',
         headers,
         body: JSON.stringify({
           action: 'contest',
           comments: (contestRemarks || 'Contested') + ' — Evidence forwarded to Acquirer on behalf of Partner for Visa consideration.',
-          evidence: evidenceFiles[1] || 'EvidenceSubmitted.pdf'
+          evidence: uploadedDocs
         })
       });
 
@@ -1848,10 +1854,20 @@ function MerchantPortal({
                       </div>
                       
                       <div style={{ padding: '20px', display: 'flex', gap: '16px', overflowX: 'auto', background: '#fff' }}>
-                        {[1, 2, 3, 4].map(i => (
-                          <div key={i} style={{ width: '120px', height: '80px', border: '2px solid #e0e0e0', borderTop: '4px solid #d1c4e9', borderRadius: '4px', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#d1c4e9', background: '#fafafa' }}>
+                        {(cb.documents && cb.documents.length > 0) ? cb.documents.map(doc => (
+                          <div key={doc.id} style={{ width: '220px', padding: '12px', border: '2px solid', borderColor: doc.status === 'Rejected' ? '#ff4d4f' : doc.status === 'Accepted' ? '#52c41a' : '#d1c4e9', borderTop: `4px solid ${doc.status === 'Rejected' ? '#ff4d4f' : doc.status === 'Accepted' ? '#52c41a' : '#d1c4e9'}`, borderRadius: '4px', flexShrink: 0, display: 'flex', flexDirection: 'column', color: '#333', background: '#fafafa' }}>
+                            <div style={{ fontWeight: 'bold', fontSize: '13px', marginBottom: '8px', wordBreak: 'break-all' }}>📄 {doc.filename}</div>
+                            <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Status: <strong style={{ color: doc.status === 'Rejected' ? '#ff4d4f' : doc.status === 'Accepted' ? '#52c41a' : '#faad14' }}>{doc.status}</strong></div>
+                            <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Date: {new Date(doc.uploadedAt).toLocaleDateString()}</div>
+                            {doc.status === 'Rejected' && (
+                              <div style={{ fontSize: '11px', color: '#ff4d4f', marginTop: '6px', padding: '6px', background: '#fff1f0', borderRadius: '4px' }}>
+                                <strong>Remarks:</strong> {doc.rejectionRemarks}
+                              </div>
+                            )}
                           </div>
-                        ))}
+                        )) : (
+                          <div style={{ color: 'var(--text-muted)', fontSize: '13px' }}>No previous evidence uploaded.</div>
+                        )}
                       </div>
                     </>
                   )}
@@ -2092,6 +2108,10 @@ function AdminPortal({
   const [visaAcceptedAmount, setVisaAcceptedAmount] = useState('');
   const [visaRemarks, setVisaRemarks] = useState('');
   const [visaEvidenceFile, setVisaEvidenceFile] = useState(null);
+  
+  // Document rejection state
+  const [selectedDocsToReject, setSelectedDocsToReject] = useState([]);
+  const [rejectionRemarks, setRejectionRemarks] = useState('');
   const [adminDisputeAction, setAdminDisputeAction] = useState('full');
 
   // Form states
@@ -2376,9 +2396,23 @@ function AdminPortal({
     }
   };
 
-  // Review decline resubmit
-  const handleDecline = async (disputeId) => {
-    const id = disputeId || targetDisputeId;
+  const handleDeclineClick = (disputeId) => {
+    setTargetDisputeId(disputeId);
+    setSelectedDocsToReject([]);
+    setRejectionRemarks('');
+    setActiveModal('declineDocuments');
+  };
+
+  const submitDeclineDocs = async () => {
+    if (selectedDocsToReject.length === 0) {
+      showToast('Please select at least one document to reject', 'error');
+      return;
+    }
+    if (!rejectionRemarks.trim()) {
+      showToast('Rejection remarks are mandatory', 'error');
+      return;
+    }
+    const id = targetDisputeId;
     if (!id) return;
     try {
       const response = await fetch(`${API_URL}/disputes/${id}/action`, {
@@ -2386,8 +2420,8 @@ function AdminPortal({
         headers: { 'Content-Type': 'application/json', 'x-user-role': 'admin', 'x-user-name': currentUser?.username || 'nsdladmin' },
         body: JSON.stringify({
           action: 'admin_request_info',
-          comments: 'Uploaded proof insufficient. Resubmitting to merchant.',
-          evidence: evidenceFiles.adminUpload ? evidenceFiles.adminUpload.name : null
+          comments: rejectionRemarks,
+          rejectedDocs: selectedDocsToReject.map(docId => ({ id: docId, remarks: rejectionRemarks }))
         })
       });
 
@@ -3522,7 +3556,7 @@ function AdminPortal({
                         <button type="button" className="btn btn-sm btn-success" onClick={() => handleVisaAccept(cb.id)}>
                           ✓ Accept &amp; Submit to Visa
                         </button>
-                        <button type="button" className="btn btn-sm btn-danger" onClick={() => handleDecline(cb.id)}>
+                        <button type="button" className="btn btn-sm btn-danger" onClick={() => handleDeclineClick(cb.id)}>
                           ✕ Request More Info / Reject Documents
                         </button>
                         <button type="button" className="btn btn-sm" style={{ background: '#0288d1', color: '#fff' }} onClick={() => handleAdminEscalate(cb.id)}>
@@ -3560,7 +3594,7 @@ function AdminPortal({
                             <button type="button" className="btn btn-sm btn-success" onClick={() => handleVisaAccept(cb.id)}>
                               Accept &amp; Submit to Visa
                             </button>
-                            <button type="button" className="btn btn-sm btn-danger" onClick={() => handleDecline(cb.id)}>
+                            <button type="button" className="btn btn-sm btn-danger" onClick={() => handleDeclineClick(cb.id)}>
                               Request More Info
                             </button>
                           </>
@@ -3602,7 +3636,31 @@ function AdminPortal({
                     <div><div style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '3px' }}>Status</div><div>{renderStatusBadge(cb.mStatus)}</div></div>
                     <div><div style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '3px' }}>Merchant Action</div><div style={{ fontWeight: 600 }}>{cb.merchantAction || '—'}</div></div>
                   </div>
-                  {(cb.rejectReason || cb.merchantAction === 'evidence' || cb.merchantAction === 'rejected' || cb.merchantAction === 'additional_evidence') ? (
+                  {(cb.documents && cb.documents.length > 0) ? (
+                    <div>
+                      <div style={{ fontSize: '12px', fontWeight: 600, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '6px' }}>Submitted Documents</div>
+                      {cb.documents.map((doc, idx) => (
+                        <div key={doc.id || idx} className="remarks-doc" style={{ marginBottom: '8px', border: doc.status === 'Rejected' ? '1px solid #ff4d4f' : '' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <span>📄 {doc.filename}</span>
+                            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                              <span style={{ fontSize: '11px', fontWeight: 'bold', color: doc.status === 'Rejected' ? '#ff4d4f' : doc.status === 'Accepted' ? '#52c41a' : '#faad14' }}>{doc.status}</span>
+                              <button type="button" className="btn btn-sm btn-secondary" onClick={() => showToast(`Downloading ${doc.filename}...`, 'success')}>⬇ Download</button>
+                            </div>
+                          </div>
+                          {doc.status === 'Rejected' && doc.rejectionRemarks && (
+                            <div style={{ marginTop: '8px', fontSize: '12px', color: '#ff4d4f' }}>
+                              <strong>Rejection Reason:</strong> {doc.rejectionRemarks}
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                      <div style={{ fontSize: '12px', fontWeight: 600, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '6px', marginTop: '12px' }}>Merchant Justification Remarks</div>
+                      <div className="remarks-reason">
+                        {cb.rejectReason || 'Merchant contested the chargeback. Pending admin review.'}
+                      </div>
+                    </div>
+                  ) : (cb.rejectReason || cb.merchantAction === 'evidence' || cb.merchantAction === 'rejected' || cb.merchantAction === 'additional_evidence') ? (
                     <div>
                       <div style={{ fontSize: '12px', fontWeight: 600, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '6px' }}>Submitted Document</div>
                       <div className="remarks-doc">
@@ -3614,10 +3672,6 @@ function AdminPortal({
                         {cb.rejectReason || (cb.merchantAction === 'evidence'
                           ? 'Merchant submitted evidence documents. Pending admin verification before representment to Visa/NPCI.'
                           : 'Merchant contested the chargeback. Pending admin review.')}
-                      </div>
-                      <div style={{ marginTop: '15px' }}>
-                        <label style={{ fontSize: '12px', fontWeight: 600, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '6px', display: 'block' }}>Admin Evidence Upload (Optional)</label>
-                        <input type="file" className="form-control" onChange={(e) => setEvidenceFiles({ ...evidenceFiles, adminUpload: e.target.files?.[0] || null })} />
                       </div>
                     </div>
                   ) : (
@@ -3632,8 +3686,8 @@ function AdminPortal({
                     </>
                   ) : isPendingVerification(cb) ? (
                     <>
-                      <button type="button" className="btn btn-danger" style={{ flex: 1, minWidth: '140px' }} onClick={() => handleArbitrationLost(cb.id)}>Accept Loss (Refund Merchant)</button>
-                      <button type="button" className="btn btn-warning" style={{ flex: 1, minWidth: '140px', background: '#eab308', color: '#fff', border: 'none' }} onClick={() => handleDecline(cb.id)}>Decline & Send to Merchant</button>
+                      <button type="button" className="btn btn-danger" style={{ flex: 1, minWidth: '140px' }} onClick={() => handleArbitrationLost(cb.id)}>Accept Loss (Send to Visa)</button>
+                      <button type="button" className="btn btn-warning" style={{ flex: 1, minWidth: '140px', background: '#eab308', color: '#fff', border: 'none' }} onClick={() => handleDeclineClick(cb.id)}>Decline & Send to Merchant</button>
                       <button type="button" className="btn btn-secondary" onClick={() => setActiveModal(null)}>Cancel</button>
                     </>
                   ) : (
@@ -3664,6 +3718,55 @@ function AdminPortal({
                 </div>
                 <div className="modal-footer">
                   <button className="btn btn-secondary" style={{ width: '100%' }} onClick={() => setActiveModal('disputeDetails')}>Back</button>
+                </div>
+              </div>
+            );
+          })()}
+        </div>
+      )}
+
+      {activeModal === 'declineDocuments' && (
+        <div className="overlay open">
+          {(() => {
+            const cb = chargebacks.find(x => x.id === targetDisputeId);
+            if (!cb) return null;
+            return (
+              <div className="modal">
+                <div className="modal-hdr"><h3>Reject Documents &amp; Request More Info</h3><button className="modal-close" onClick={() => setActiveModal(null)}>✕</button></div>
+                <div className="modal-body">
+                  <div style={{ fontSize: '13px', fontWeight: '600', marginBottom: '10px' }}>Select documents to reject:</div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '16px' }}>
+                    {(cb.documents || []).filter(d => d.status === 'Pending Review').map(doc => (
+                      <label key={doc.id} style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px' }}>
+                        <input 
+                          type="checkbox" 
+                          checked={selectedDocsToReject.includes(doc.id)} 
+                          onChange={(e) => {
+                            if (e.target.checked) setSelectedDocsToReject([...selectedDocsToReject, doc.id]);
+                            else setSelectedDocsToReject(selectedDocsToReject.filter(id => id !== doc.id));
+                          }}
+                        />
+                        📄 {doc.filename}
+                      </label>
+                    ))}
+                    {(cb.documents || []).filter(d => d.status === 'Pending Review').length === 0 && (
+                      <div style={{ color: 'var(--text-muted)', fontSize: '13px' }}>No documents pending review.</div>
+                    )}
+                  </div>
+                  
+                  <div style={{ fontSize: '13px', fontWeight: '600', marginBottom: '6px' }}>Rejection Remarks (Mandatory):</div>
+                  <textarea 
+                    className="mfi" 
+                    placeholder="Enter reason for rejection..." 
+                    value={rejectionRemarks}
+                    onChange={(e) => setRejectionRemarks(e.target.value)}
+                    rows={4}
+                    style={{ width: '100%', resize: 'vertical' }}
+                  ></textarea>
+                </div>
+                <div className="modal-footer" style={{ display: 'flex', gap: '10px' }}>
+                  <button className="btn btn-secondary" style={{ flex: 1 }} onClick={() => setActiveModal('remarks')}>Back</button>
+                  <button className="btn btn-danger" style={{ flex: 2 }} onClick={() => submitDeclineDocs()}>Submit Rejection</button>
                 </div>
               </div>
             );

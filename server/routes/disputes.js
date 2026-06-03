@@ -145,8 +145,21 @@ router.post('/:id/action', async (req, res) => {
       dispute.merchantAction = 'accepted';
       dispute.timeline.unshift({ by: req.headers['x-user-name'] || 'System', time: new Date().toISOString(), title: 'Accepted Liability', remarks: 'Merchant accepted the dispute loss.', file: null });
     } else if (action === 'admin_request_info') {
+      const { rejectedDocs } = req.body;
       dispute.mSubStatus = 'Document Pending from Merchant';
       dispute.adminAction = 'request_info';
+      
+      if (Array.isArray(rejectedDocs)) {
+        rejectedDocs.forEach(rdoc => {
+          const doc = dispute.documents.find(d => d.id === rdoc.id);
+          if (doc) {
+            doc.status = 'Rejected';
+            doc.rejectionRemarks = rdoc.remarks;
+            doc.rejectedAt = new Date().toISOString();
+          }
+        });
+      }
+
       dispute.timeline.unshift({ by: req.headers['x-user-name'] || 'System', time: new Date().toISOString(), title: 'Documents Rejected / More Info Requested', remarks: comments || 'Admin requested more information from the merchant.', file: null });
     } else if (action === 'contest') {
       dispute.mSubStatus = 'Document Pending Verification';
@@ -156,7 +169,29 @@ router.post('/:id/action', async (req, res) => {
         dispute.merchantAction = 'evidence';
       }
       dispute.adminAction = null;
-      dispute.timeline.unshift({ by: req.headers['x-user-name'] || 'System', time: new Date().toISOString(), title: 'Evidence Submitted', remarks: comments || 'Evidence provided to fight dispute.', file: evidence || null });
+      
+      let fileString = null;
+      if (Array.isArray(evidence)) {
+        evidence.forEach((filename, idx) => {
+          dispute.documents.push({
+            id: 'doc_' + Date.now() + '_' + idx,
+            filename: filename,
+            uploadedAt: new Date().toISOString(),
+            status: 'Pending Review'
+          });
+        });
+        fileString = evidence.join(', ');
+      } else if (evidence) {
+        dispute.documents.push({
+          id: 'doc_' + Date.now(),
+          filename: evidence,
+          uploadedAt: new Date().toISOString(),
+          status: 'Pending Review'
+        });
+        fileString = evidence;
+      }
+      
+      dispute.timeline.unshift({ by: req.headers['x-user-name'] || 'System', time: new Date().toISOString(), title: 'Evidence Submitted', remarks: comments || 'Evidence provided to fight dispute.', file: fileString });
     } else if (action === 'escalate') {
       dispute.mStatus = 'Pre-Arbitration';
       dispute.mSubStatus = 'Pending Visa Review';

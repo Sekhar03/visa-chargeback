@@ -8,6 +8,15 @@ const timelineEntrySchema = new mongoose.Schema({
   file: { type: String, default: null }
 });
 
+const documentEntrySchema = new mongoose.Schema({
+  id: { type: String, required: true },
+  filename: { type: String, required: true },
+  uploadedAt: { type: String, required: true },
+  status: { type: String, default: 'Pending Review' },
+  rejectionRemarks: { type: String, default: '' },
+  rejectedAt: { type: String, default: null }
+});
+
 const chargebackSchema = new mongoose.Schema({
   id: { type: String, required: true, unique: true },
   caseId: { type: String, required: true },
@@ -46,6 +55,7 @@ const chargebackSchema = new mongoose.Schema({
   adminName: { type: String, default: 'nsdladmin' },
   visaPending: { type: Boolean, default: false },
   acceptedAmount: { type: Number, default: 0 },
+  documents: [documentEntrySchema],
   timeline: [timelineEntrySchema]
 }, { timestamps: true });
 
