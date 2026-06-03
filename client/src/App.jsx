@@ -1858,8 +1858,7 @@ function MerchantPortal({
                   </div>
 
                   {/* Previous Documents */}
-                  {reportTab !== 'doc-pending' && (
-                    <>
+                  <>
                       <div style={{ padding: '12px 20px', background: '#fff', borderTop: '1px solid #eee', borderBottom: '1px solid #eee', fontWeight: 'bold', fontSize: '13px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: '#000' }}>
                         <span>Previous Documents</span>
                         <button style={{ background: '#50BDC9', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}>Download All Docs</button>
@@ -1886,8 +1885,7 @@ function MerchantPortal({
                           <div style={{ color: 'var(--text-muted)', fontSize: '13px' }}>No previous evidence uploaded.</div>
                         )}
                       </div>
-                    </>
-                  )}
+                  </>
                 </div>
                 
                 <div style={{ padding: '12px 20px', borderTop: '1px solid #e0e0e0', display: 'flex', justifyContent: 'flex-end', alignItems: 'center', background: '#fff', flexShrink: 0, zIndex: 10 }}>
@@ -3821,7 +3819,6 @@ function AdminPortal({
                     <>
                       <button type="button" className="btn btn-danger" style={{ flex: 1, minWidth: '140px' }} onClick={() => handleArbitrationLost(cb.id)}>Accept Loss (Send to Visa)</button>
                       <button type="button" className="btn btn-warning" style={{ flex: 1, minWidth: '140px', background: '#eab308', color: '#fff', border: 'none' }} onClick={() => handleDeclineClick(cb.id)}>Decline & Send to Merchant</button>
-                      <button type="button" className="btn btn-primary" style={{ flex: 1, minWidth: '140px', background: '#1890ff', color: '#fff', border: 'none' }} onClick={() => handleAdminUploadClick(cb.id)}>Upload Evidence for Merchant</button>
                       <button type="button" className="btn btn-secondary" onClick={() => setActiveModal(null)}>Cancel</button>
                     </>
                   ) : (
