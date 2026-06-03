@@ -2972,7 +2972,7 @@ function AdminPortal({
                     <div style={{ fontSize: '14px', fontWeight: '600' }}>{formatINR(stats.totalAmt)}</div>
                     <div style={{ marginTop: 'auto', paddingTop: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <span style={{ fontSize: '12px', fontWeight: '600', color: 'var(--brand)' }}>+5.2%</span>
-                      <span style={{ fontSize: '11px', color: 'var(--text-light)' }}>vs last month</span>
+                      <span style={{ fontSize: '11px', color: 'var(--text-light)' }}>vs yesterday</span>
                     </div>
                   </div>
 
@@ -2985,7 +2985,7 @@ function AdminPortal({
                     <div style={{ fontSize: '14px', fontWeight: '600' }}>{formatINR(stats.totalAmt)}</div>
                     <div style={{ marginTop: 'auto', paddingTop: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <span style={{ fontSize: '12px', fontWeight: '600', color: 'var(--brand)' }}>+12.5%</span>
-                      <span style={{ fontSize: '11px', color: 'var(--text-light)' }}>vs last month</span>
+                      <span style={{ fontSize: '11px', color: 'var(--text-light)' }}>vs yesterday</span>
                     </div>
                   </div>
                   
@@ -2998,7 +2998,7 @@ function AdminPortal({
                     <div style={{ fontSize: '14px', fontWeight: '600' }}>{formatINR(stats.openAmt)}</div>
                     <div style={{ marginTop: 'auto', paddingTop: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <span style={{ fontSize: '12px', fontWeight: '600', color: 'var(--yellow)' }}>-4.2%</span>
-                      <span style={{ fontSize: '11px', color: 'var(--text-light)' }}>vs last month</span>
+                      <span style={{ fontSize: '11px', color: 'var(--text-light)' }}>vs yesterday</span>
                     </div>
                   </div>
                   
@@ -3011,7 +3011,7 @@ function AdminPortal({
                     <div style={{ fontSize: '14px', fontWeight: '600' }}>{formatINR(stats.lostAmt)}</div>
                     <div style={{ marginTop: 'auto', paddingTop: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <span style={{ fontSize: '12px', fontWeight: '600', color: 'var(--red)' }}>+2.1%</span>
-                      <span style={{ fontSize: '11px', color: 'var(--text-light)' }}>vs last month</span>
+                      <span style={{ fontSize: '11px', color: 'var(--text-light)' }}>vs yesterday</span>
                     </div>
                   </div>
                   
@@ -3024,7 +3024,7 @@ function AdminPortal({
                     <div style={{ fontSize: '14px', fontWeight: '600' }}>{formatINR(stats.wonAmt)}</div>
                     <div style={{ marginTop: 'auto', paddingTop: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <span style={{ fontSize: '12px', fontWeight: '600', color: 'var(--green)' }}>+8.4%</span>
-                      <span style={{ fontSize: '11px', color: 'var(--text-light)' }}>vs last month</span>
+                      <span style={{ fontSize: '11px', color: 'var(--text-light)' }}>vs yesterday</span>
                     </div>
                   </div>
                 </div>
