@@ -2366,7 +2366,7 @@ function AdminPortal({
         time: new Date().toLocaleString(),
         title: 'Dispute Proof Declined',
         remarks: 'Uploaded proof insufficient. Resubmitting chargeback to merchant to provide valid delivery docs.',
-        file: null
+        file: evidenceFiles.adminUpload ? evidenceFiles.adminUpload.name : null
       };
 
       const response = await fetch(`${API_URL}/disputes/${id}`, {
@@ -2544,7 +2544,10 @@ function AdminPortal({
   };
 
   // Arbitration lost decision
-  const handleArbitrationLost = async () => {
+  // Arbitration lost decision
+  const handleArbitrationLost = async (disputeId) => {
+    const id = typeof disputeId === 'string' ? disputeId : targetDisputeId;
+    if (!id) return;
     try {
       const entry = {
         by: 'nsdladmin',
@@ -2554,7 +2557,7 @@ function AdminPortal({
         file: null
       };
 
-      const response = await fetch(`${API_URL}/disputes/${targetDisputeId}`, {
+      const response = await fetch(`${API_URL}/disputes/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -3733,8 +3736,8 @@ function AdminPortal({
                     </>
                   ) : isPendingVerification(cb) ? (
                     <>
-                      <button type="button" className="btn btn-success" style={{ flex: 1, minWidth: '140px' }} onClick={() => handleConsider(cb.id)}>Submit Evidence to Visa (Fight to Win)</button>
-                      <button type="button" className="btn btn-danger" style={{ flex: 1, minWidth: '140px' }} onClick={() => handleDecline(cb.id)}>Decline (Re-Route Merchant)</button>
+                      <button type="button" className="btn btn-danger" style={{ flex: 1, minWidth: '140px' }} onClick={() => handleArbitrationLost(cb.id)}>Accept Loss (Refund Merchant)</button>
+                      <button type="button" className="btn btn-warning" style={{ flex: 1, minWidth: '140px', background: '#eab308', color: '#fff', border: 'none' }} onClick={() => handleDecline(cb.id)}>Decline & Send to Merchant</button>
                       <button type="button" className="btn btn-secondary" onClick={() => setActiveModal(null)}>Cancel</button>
                     </>
                   ) : (
