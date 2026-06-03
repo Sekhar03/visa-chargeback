@@ -665,14 +665,17 @@ function MerchantPortal({
   };
 
   const getActionBtn = (cb) => {
-    if (cb.merchantAction === 'accepted') return <span className="badge badge-won">✓ Accepted</span>;
-    if (cb.merchantAction === 'rejected') return <span className="badge badge-resubmit">✕ Rejected</span>;
-    if (cb.merchantAction === 'evidence') return <span className="badge badge-progress">Evidence Submitted</span>;
-    return (
-      <button className="ta-btn" onClick={() => { setTargetDisputeId(cb.id); setActiveModal('action1'); }}>
-        Take Action
-      </button>
-    );
+    if (cb.visaPending || cb.mSubStatus === 'Submitted to Visa') return <span className="badge badge-won" style={{background: '#e3f2fd', color: '#1976d2'}}>Submitted to Visa</span>;
+    if (cb.resolution === 'Lost' || cb.mSubStatus === 'Chargeback Lost') return <span className="badge badge-resubmit">Accepted (Lost)</span>;
+    if (cb.mSubStatus === 'Document Pending Verification') return <span className="badge badge-progress">Pending Admin Verification</span>;
+    if (cb.mSubStatus === 'Document Pending from Merchant' || cb.mSubStatus === 'Pending') {
+      return (
+        <button className="ta-btn" onClick={() => { setTargetDisputeId(cb.id); setActiveModal('action1'); }}>
+          Take Action
+        </button>
+      );
+    }
+    return <span className="badge" style={{background: '#f5f5f5', color: '#757575'}}>{cb.mSubStatus}</span>;
   };
 
   // Post remarks reply
@@ -2117,9 +2120,9 @@ function AdminPortal({
   const [filterTo, setFilterTo] = useState(TODAY_STR);
   
   // Dashboard date filters
-  const [dashFilterFrom, setDashFilterFrom] = useState(DEFAULT_FROM);
+  const [dashDateRangeType, setDashDateRangeType] = useState('7days');
+  const [dashFilterFrom, setDashFilterFrom] = useState(() => { let d = new Date(); d.setDate(d.getDate() - 7); return d.toISOString().split('T')[0]; });
   const [dashFilterTo, setDashFilterTo] = useState(TODAY_STR);
-  const [dashDateRangeType, setDashDateRangeType] = useState('custom');
 
   const [filterSearchBy, setFilterSearchBy] = useState('');
   const [aVcSearchInput, setAVcSearchInput] = useState('');
@@ -2134,7 +2137,7 @@ function AdminPortal({
   const [evidenceFiles, setEvidenceFiles] = useState({ adminUpload: null });
 
   const isPendingVerification = (cb) =>
-    cb && (cb.merchantAction === 'evidence' || cb.merchantAction === 'rejected') && !cb.adminAction;
+    cb && (cb.merchantAction === 'evidence' || cb.merchantAction === 'rejected' || cb.merchantAction === 'additional_evidence') && !cb.adminAction && !cb.visaPending;
 
   const handleAdminEscalate = async (id) => {
     try {
@@ -2227,7 +2230,8 @@ function AdminPortal({
         if (filterSearchBy === 'TID' && !cb.tid?.includes(filterRrn)) return false;
         if (filterSearchBy === 'MID' && !cb.userId.includes(filterRrn)) return false;
         if (filterSearchBy === 'Case ID' && !cb.caseId?.includes(filterRrn) && !cb.id?.includes(filterRrn)) return false;
-        if (!filterSearchBy && !cb.rrn.includes(filterRrn) && !cb.txnId.includes(filterRrn) && !cb.userId.includes(filterRrn) && !cb.id?.includes(filterRrn)) return false;
+        if (filterSearchBy === 'Merchant Name' && !cb.userName?.toLowerCase().includes(filterRrn.toLowerCase())) return false;
+        if (!filterSearchBy && !cb.rrn.includes(filterRrn) && !cb.txnId.includes(filterRrn) && !cb.userId.includes(filterRrn) && !cb.id?.includes(filterRrn) && !cb.userName?.toLowerCase().includes(filterRrn.toLowerCase())) return false;
       }
       if (filterStatus && cb.mStatus !== filterStatus) return false;
       if (filterSubStatus && cb.mSubStatus !== filterSubStatus) return false;
@@ -2377,22 +2381,13 @@ function AdminPortal({
     const id = disputeId || targetDisputeId;
     if (!id) return;
     try {
-      const entry = {
-        by: 'nsdladmin',
-        time: new Date().toLocaleString(),
-        title: 'Dispute Proof Declined',
-        remarks: 'Uploaded proof insufficient. Resubmitting chargeback to merchant to provide valid delivery docs.',
-        file: evidenceFiles.adminUpload ? evidenceFiles.adminUpload.name : null
-      };
-
-      const response = await fetch(`${API_URL}/disputes/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch(`${API_URL}/disputes/${id}/action`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-user-role': 'admin', 'x-user-name': currentUser?.username || 'nsdladmin' },
         body: JSON.stringify({
-          adminAction: 'declined',
-          merchantAction: null, // Reset so merchant takes action again
-          mSubStatus: 'Chargeback Resubmit',
-          timelineEntry: entry
+          action: 'admin_request_info',
+          comments: 'Uploaded proof insufficient. Resubmitting to merchant.',
+          evidence: evidenceFiles.adminUpload ? evidenceFiles.adminUpload.name : null
         })
       });
 
@@ -2937,7 +2932,10 @@ function AdminPortal({
                         setDashDateRangeType(val);
                         const today = new Date();
                         const todayStr = today.toISOString().split('T')[0];
-                        if (val === 'yesterday') {
+                        if (val === 'today') {
+                          setDashFilterFrom(todayStr);
+                          setDashFilterTo(todayStr);
+                        } else if (val === 'yesterday') {
                           const y = new Date(today);
                           y.setDate(y.getDate() - 1);
                           setDashFilterFrom(y.toISOString().split('T')[0]);
@@ -2955,6 +2953,7 @@ function AdminPortal({
                         }
                       }}
                     >
+                      <option value="today">Today</option>
                       <option value="custom">Custom Date Range</option>
                       <option value="yesterday">Yesterday</option>
                       <option value="7days">Last 7 Days</option>
@@ -3083,53 +3082,78 @@ function AdminPortal({
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '20px' }}>
                       {/* Col 1 */}
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                        <div style={{ position: 'relative' }}>
-                          <span style={{ position: 'absolute', left: '12px', top: '10px', color: '#50BDC9' }}>📅</span>
-                          <input type="text" onFocus={(e) => e.target.type = 'date'} onBlur={(e) => { if (!e.target.value) e.target.type = 'text'; }} style={{ width: '100%', padding: '10px 10px 10px 36px', border: '1px solid #e0e0e0', borderRadius: '4px', color: '#757575', outline: 'none', background: 'transparent' }} placeholder="From Date" value={filterFrom} onChange={(e) => setFilterFrom(e.target.value)} />
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                          <label style={{ fontSize: '12px', fontWeight: 'bold', color: '#546e7a' }}>From Date</label>
+                          <div style={{ position: 'relative' }}>
+                            <span style={{ position: 'absolute', left: '12px', top: '10px', color: '#50BDC9' }}>📅</span>
+                            <input type="text" onFocus={(e) => e.target.type = 'date'} onBlur={(e) => { if (!e.target.value) e.target.type = 'text'; }} style={{ width: '100%', padding: '10px 10px 10px 36px', border: '1px solid #e0e0e0', borderRadius: '4px', color: '#757575', outline: 'none', background: 'transparent' }} placeholder="From Date" value={filterFrom} onChange={(e) => setFilterFrom(e.target.value)} />
+                          </div>
                         </div>
-                        <select style={{ width: '100%', padding: '10px', border: '1px solid #e0e0e0', borderRadius: '4px', color: '#757575', outline: 'none', appearance: 'auto', background: 'transparent' }}>
-                          <option value="ISU">ISU</option>
-                        </select>
-                        <select style={{ width: '100%', padding: '10px', border: '1px solid #e0e0e0', borderRadius: '4px', color: '#757575', outline: 'none', appearance: 'auto', background: 'transparent' }} value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}>
-                          <option value="">Dispute Status</option>
-                          <option value="Dispute Won Partially">Dispute Won Partially</option>
-                          <option value="Dispute Won Fully">Dispute Won Fully</option>
-                          <option value="Dispute Lost – TAT Expired">Dispute Lost – TAT Expired</option>
-                          <option value="Dispute Lost – Accepted">Dispute Lost – Accepted</option>
-                          <option value="Document Rejected">Document Rejected</option>
-                          <option value="Document Pending Verification">Document Pending Verification</option>
-                          <option value="Document Pending from Merchant">Document Pending from Merchant</option>
-                        </select>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                          <label style={{ fontSize: '12px', fontWeight: 'bold', color: '#546e7a' }}>Vendor</label>
+                          <select style={{ width: '100%', padding: '10px', border: '1px solid #e0e0e0', borderRadius: '4px', color: '#757575', outline: 'none', appearance: 'auto', background: 'transparent' }}>
+                            <option value="ISU">ISU</option>
+                          </select>
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                          <label style={{ fontSize: '12px', fontWeight: 'bold', color: '#546e7a' }}>Dispute Status</label>
+                          <select style={{ width: '100%', padding: '10px', border: '1px solid #e0e0e0', borderRadius: '4px', color: '#757575', outline: 'none', appearance: 'auto', background: 'transparent' }} value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}>
+                            <option value="">Dispute Status</option>
+                            <option value="Dispute Won Partially">Dispute Won Partially</option>
+                            <option value="Dispute Won Fully">Dispute Won Fully</option>
+                            <option value="Dispute Lost – TAT Expired">Dispute Lost – TAT Expired</option>
+                            <option value="Dispute Lost – Accepted">Dispute Lost – Accepted</option>
+                            <option value="Document Rejected">Document Rejected</option>
+                            <option value="Document Pending Verification">Document Pending Verification</option>
+                            <option value="Document Pending from Merchant">Document Pending from Merchant</option>
+                          </select>
+                        </div>
                       </div>
                       {/* Col 2 */}
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                        <div style={{ position: 'relative' }}>
-                          <span style={{ position: 'absolute', left: '12px', top: '10px', color: '#50BDC9' }}>📅</span>
-                          <input type="text" onFocus={(e) => e.target.type = 'date'} onBlur={(e) => { if (!e.target.value) e.target.type = 'text'; }} style={{ width: '100%', padding: '10px 10px 10px 36px', border: '1px solid #e0e0e0', borderRadius: '4px', color: '#757575', outline: 'none', background: 'transparent' }} placeholder="To Date" value={filterTo} onChange={(e) => setFilterTo(e.target.value)} />
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                          <label style={{ fontSize: '12px', fontWeight: 'bold', color: '#546e7a' }}>To Date</label>
+                          <div style={{ position: 'relative' }}>
+                            <span style={{ position: 'absolute', left: '12px', top: '10px', color: '#50BDC9' }}>📅</span>
+                            <input type="text" onFocus={(e) => e.target.type = 'date'} onBlur={(e) => { if (!e.target.value) e.target.type = 'text'; }} style={{ width: '100%', padding: '10px 10px 10px 36px', border: '1px solid #e0e0e0', borderRadius: '4px', color: '#757575', outline: 'none', background: 'transparent' }} placeholder="To Date" value={filterTo} onChange={(e) => setFilterTo(e.target.value)} />
+                          </div>
                         </div>
-                        <select style={{ width: '100%', padding: '10px', border: '1px solid #e0e0e0', borderRadius: '4px', color: '#757575', outline: 'none', appearance: 'auto', background: 'transparent' }}>
-                          <option value="Visa">Visa</option>
-                        </select>
-                        <select style={{ width: '100%', padding: '10px', border: '1px solid #e0e0e0', borderRadius: '4px', color: '#757575', outline: 'none', appearance: 'auto', background: 'transparent' }} value={filterSearchBy} onChange={(e) => setFilterSearchBy(e.target.value)}>
-                          <option value="">Search By</option>
-                          <option value="Txn ID">Transaction ID (Txn ID)</option>
-                          <option value="RRN">RRN</option>
-                          <option value="TID">TID</option>
-                          <option value="MID">MID</option>
-                          <option value="Case ID">Case ID</option>
-                        </select>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                          <label style={{ fontSize: '12px', fontWeight: 'bold', color: '#546e7a' }}>Scheme</label>
+                          <select style={{ width: '100%', padding: '10px', border: '1px solid #e0e0e0', borderRadius: '4px', color: '#757575', outline: 'none', appearance: 'auto', background: 'transparent' }}>
+                            <option value="Visa">Visa</option>
+                          </select>
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                          <label style={{ fontSize: '12px', fontWeight: 'bold', color: '#546e7a' }}>Search By</label>
+                          <select style={{ width: '100%', padding: '10px', border: '1px solid #e0e0e0', borderRadius: '4px', color: '#757575', outline: 'none', appearance: 'auto', background: 'transparent' }} value={filterSearchBy} onChange={(e) => setFilterSearchBy(e.target.value)}>
+                            <option value="">Search By</option>
+                            <option value="Txn ID">Transaction ID (Txn ID)</option>
+                            <option value="RRN">RRN</option>
+                            <option value="TID">TID</option>
+                            <option value="MID">MID</option>
+                            <option value="Case ID">Case ID</option>
+                            <option value="Merchant Name">Merchant Name</option>
+                          </select>
+                        </div>
                       </div>
                       {/* Col 3 */}
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                        <select style={{ width: '100%', padding: '10px', border: '1px solid #e0e0e0', borderRadius: '4px', color: '#757575', outline: 'none', appearance: 'auto', background: 'transparent' }} value={filterSubStatus} onChange={(e) => setFilterSubStatus(e.target.value)}>
-                          <option value="">Dispute Type</option>
-                          <option value="Chargeback">Chargeback</option>
-                          <option value="Pre-Arbitration">Pre-Arbitration</option>
-                          <option value="Retrieval Request">Retrieval Request</option>
-                          <option value="Arbitration">Arbitration</option>
-                        </select>
-                        <div style={{ height: '38px' }}></div> {/* Empty space to align with the rest */}
-                        <input type="text" style={{ width: '100%', padding: '10px', border: '1px solid #e0e0e0', borderRadius: '4px', color: '#757575', outline: 'none', background: 'transparent' }} placeholder="Search" value={filterRrn} onChange={(e) => setFilterRrn(e.target.value)} />
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                          <label style={{ fontSize: '12px', fontWeight: 'bold', color: '#546e7a' }}>Dispute Type</label>
+                          <select style={{ width: '100%', padding: '10px', border: '1px solid #e0e0e0', borderRadius: '4px', color: '#757575', outline: 'none', appearance: 'auto', background: 'transparent' }} value={filterSubStatus} onChange={(e) => setFilterSubStatus(e.target.value)}>
+                            <option value="">Dispute Type</option>
+                            <option value="Chargeback">Chargeback</option>
+                            <option value="Pre-Arbitration">Pre-Arbitration</option>
+                            <option value="Retrieval Request">Retrieval Request</option>
+                            <option value="Arbitration">Arbitration</option>
+                          </select>
+                        </div>
+                        <div style={{ height: '0px' }}></div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                          <label style={{ fontSize: '12px', fontWeight: 'bold', color: '#546e7a' }}>Search String</label>
+                          <input type="text" style={{ width: '100%', padding: '10px', border: '1px solid #e0e0e0', borderRadius: '4px', color: '#757575', outline: 'none', background: 'transparent' }} placeholder="Search" value={filterRrn} onChange={(e) => setFilterRrn(e.target.value)} />
+                        </div>
                       </div>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '24px' }}>
@@ -3520,11 +3544,11 @@ function AdminPortal({
                         <button type="button" className="btn btn-sm btn-primary" onClick={() => setActiveModal('remarks')}>
                           Review Evidence
                         </button>
-                        <button type="button" className="btn btn-sm btn-success" onClick={() => handleConsider(cb.id)}>
-                          ✓ Consider (Represent to Visa)
+                        <button type="button" className="btn btn-sm btn-success" onClick={() => handleVisaAccept(cb.id)}>
+                          ✓ Accept &amp; Submit to Visa
                         </button>
                         <button type="button" className="btn btn-sm btn-danger" onClick={() => handleDecline(cb.id)}>
-                          ✕ Decline &amp; Re-route Merchant
+                          ✕ Request More Info / Reject Documents
                         </button>
                         <button type="button" className="btn btn-sm" style={{ background: '#0288d1', color: '#fff' }} onClick={() => handleAdminEscalate(cb.id)}>
                           Escalate to Pre-Arb
@@ -3535,16 +3559,34 @@ function AdminPortal({
                   ) : (
                     <>
                       <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                        {isPendingVerification(cb) && (
+                        {cb.visaPending && (
+                          <div style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
+                            <div style={{ padding: '8px 12px', background: '#e3f2fd', color: '#1565c0', borderRadius: '4px', fontSize: '13px', fontWeight: 'bold', marginBottom: '8px' }}>
+                              Case Submitted to Visa (Pending Final Decision)
+                            </div>
+                            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                              <span style={{ fontSize: '12px', fontWeight: '600', color: '#555' }}>[Simulator] Trigger Visa Webhook:</span>
+                              <button className="btn btn-sm btn-success" onClick={async () => {
+                                await fetch(`${API_URL}/disputes/${cb.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ mSubStatus: 'Chargeback Won', resolution: 'Won', visaPending: false }) });
+                                setActiveModal(null); refreshAllData();
+                              }}>Chargeback Won</button>
+                              <button className="btn btn-sm btn-danger" onClick={async () => {
+                                await fetch(`${API_URL}/disputes/${cb.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ mSubStatus: 'Chargeback Lost', resolution: 'Lost', visaPending: false }) });
+                                setActiveModal(null); refreshAllData();
+                              }}>Chargeback Lost</button>
+                            </div>
+                          </div>
+                        )}
+                        {!cb.visaPending && isPendingVerification(cb) && (
                           <>
                             <button type="button" className="btn btn-sm btn-primary" onClick={() => setActiveModal('remarks')}>
                               Review Evidence
                             </button>
-                            <button type="button" className="btn btn-sm btn-success" onClick={() => handleConsider(cb.id)}>
-                              Consider
+                            <button type="button" className="btn btn-sm btn-success" onClick={() => handleVisaAccept(cb.id)}>
+                              Accept &amp; Submit to Visa
                             </button>
                             <button type="button" className="btn btn-sm btn-danger" onClick={() => handleDecline(cb.id)}>
-                              Decline
+                              Request More Info
                             </button>
                           </>
                         )}
@@ -3703,11 +3745,34 @@ function AdminPortal({
                   </div>
                 </div>
                 <div className="modal-footer" style={{ flexWrap: 'wrap', gap: '10px' }}>
-                  <button className="btn btn-primary" style={{ flex: 1, minWidth: '100%' }} onClick={() => handleVisaReview(cb.id)}>Submit to Visa</button>
-                  <button className="btn btn-danger" style={{ flex: 1, minWidth: '100%' }} onClick={() => handleArbitrationLost(cb.id)}>Accept Loss & Send to Visa</button>
-                  <div style={{ width: '100%', textAlign: 'center', color: 'var(--text-muted)', fontSize: '12px', marginTop: '8px' }}>
-                    Note: Admin cannot decide "Won" status. Final "Won" resolution will be provided by Visa.
-                  </div>
+                  {!cb.visaPending ? (
+                    <>
+                      <button className="btn btn-primary" style={{ flex: 1, minWidth: '100%' }} onClick={() => handleVisaReview(cb.id)}>Submit to Visa</button>
+                      <button className="btn btn-danger" style={{ flex: 1, minWidth: '100%' }} onClick={() => handleArbitrationLost(cb.id)}>Accept Loss & Send to Visa</button>
+                      <div style={{ width: '100%', textAlign: 'center', color: 'var(--text-muted)', fontSize: '12px', margin: '8px 0' }}>
+                        Note: Admin cannot decide "Won" status. Final "Won" resolution will be provided by Visa.
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div style={{ width: '100%', textAlign: 'center', color: '#1565c0', fontSize: '13px', fontWeight: 'bold', margin: '8px 0' }}>
+                        Case Submitted to Visa (Pending Final Decision)
+                      </div>
+                      <div style={{ width: '100%', borderTop: '1px solid #eee', paddingTop: '12px' }}>
+                        <div style={{ fontSize: '12px', fontWeight: '600', color: '#555', marginBottom: '8px', textAlign: 'center' }}>[Simulator] Trigger Visa Webhook:</div>
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                          <button className="btn btn-sm btn-success" style={{ flex: 1 }} onClick={async () => {
+                            await fetch(`${API_URL}/disputes/${cb.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ mSubStatus: 'Chargeback Won', resolution: 'Won', visaPending: false }) });
+                            setActiveModal(null); refreshAllData();
+                          }}>Chargeback Won</button>
+                          <button className="btn btn-sm btn-danger" style={{ flex: 1 }} onClick={async () => {
+                            await fetch(`${API_URL}/disputes/${cb.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ mSubStatus: 'Chargeback Lost', resolution: 'Lost', visaPending: false }) });
+                            setActiveModal(null); refreshAllData();
+                          }}>Chargeback Lost</button>
+                        </div>
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
             );

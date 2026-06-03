@@ -144,31 +144,36 @@ router.post('/:id/action', async (req, res) => {
       dispute.mSubStatus = 'Chargeback Lost';
       dispute.merchantAction = 'accepted';
       dispute.timeline.unshift({ by: req.headers['x-user-name'] || 'System', time: new Date().toISOString(), title: 'Accepted Liability', remarks: 'Merchant accepted the dispute loss.', file: null });
+    } else if (action === 'admin_request_info') {
+      dispute.mSubStatus = 'Document Pending from Merchant';
+      dispute.adminAction = 'request_info';
+      dispute.timeline.unshift({ by: req.headers['x-user-name'] || 'System', time: new Date().toISOString(), title: 'Documents Rejected / More Info Requested', remarks: comments || 'Admin requested more information from the merchant.', file: null });
     } else if (action === 'contest') {
-      dispute.mSubStatus = 'Chargeback in Progress';
+      dispute.mSubStatus = 'Document Pending Verification';
       if (dispute.adminAction === 'considered') {
         dispute.merchantAction = 'additional_evidence';
       } else {
         dispute.merchantAction = 'evidence';
       }
+      dispute.adminAction = null;
       dispute.timeline.unshift({ by: req.headers['x-user-name'] || 'System', time: new Date().toISOString(), title: 'Evidence Submitted', remarks: comments || 'Evidence provided to fight dispute.', file: evidence || null });
     } else if (action === 'escalate') {
       dispute.mStatus = 'Pre-Arbitration';
       dispute.mSubStatus = 'Pending Visa Review';
       dispute.timeline.unshift({ by: 'Admin', time: new Date().toISOString(), title: 'Escalated to Pre-Arb', remarks: 'Case sent to Visa for Pre-Arbitration.', file: null });
     } else if (action === 'visa_accept') {
-      dispute.mSubStatus = 'Pending Visa Review';
+      dispute.mSubStatus = 'Submitted to Visa';
       dispute.adminAction = 'visa_accept';
       dispute.visaPending = true;
       dispute.timeline.unshift({ by: req.headers['x-user-name'] || 'System', time: new Date().toISOString(), title: 'Admin Accepted - Sent to Visa', remarks: 'Admin accepted the documents. Case forwarded to Visa for final ruling.', file: null });
     } else if (action === 'visa_accept_partially') {
-      dispute.mSubStatus = 'Pending Visa Review';
+      dispute.mSubStatus = 'Submitted to Visa';
       dispute.adminAction = 'visa_accept_partially';
       dispute.visaPending = true;
       dispute.acceptedAmount = req.body.acceptedAmount || 0;
       dispute.timeline.unshift({ by: req.headers['x-user-name'] || 'System', time: new Date().toISOString(), title: 'Admin Partially Accepted - Sent to Visa', remarks: `Accepted Amount: ${req.body.acceptedAmount}. Remarks: ${comments}`, file: evidence || null });
     } else if (action === 'visa_review') {
-      dispute.mSubStatus = 'Pending Visa Review';
+      dispute.mSubStatus = 'Submitted to Visa';
       dispute.adminAction = 'visa_review';
       dispute.visaPending = true;
       dispute.timeline.unshift({ by: req.headers['x-user-name'] || 'System', time: new Date().toISOString(), title: 'Sent to Visa for Review', remarks: 'Admin disagrees with merchant submission. Case escalated to Visa for review.', file: null });
