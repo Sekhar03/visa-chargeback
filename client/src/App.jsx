@@ -553,8 +553,8 @@ function MerchantPortal({
   // Dashboard calculations
   const getFilteredDashboardDisputes = () => {
     return merchantDisputes.filter(cb => {
-      if (dashFilter.from && cb.createdDate && cb.createdDate < dashFilter.from) return false;
-      if (dashFilter.to && cb.createdDate && cb.createdDate > dashFilter.to) return false;
+      if (dashFilterFrom && cb.createdDate && cb.createdDate < dashFilterFrom) return false;
+      if (dashFilterTo && cb.createdDate && cb.createdDate > dashFilterTo) return false;
       return true;
     });
   };
@@ -948,7 +948,56 @@ function MerchantPortal({
                     <div className="wb-title">Welcome, Merchant Dispute Dashboard 👋</div>
                     <div className="wb-sub">Manage and represent customer payment disputes</div>
                   </div>
-                  <div className="wb-date">{new Date().toLocaleDateString('en-IN')}</div>
+                  <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                    <select
+                      style={{ padding: '8px 12px', border: '1px solid #e0e0e0', borderRadius: '4px', color: '#757575', outline: 'none', background: 'var(--card)', fontSize: '13px' }}
+                      value={dashDateRangeType}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setDashDateRangeType(val);
+                        const today = new Date();
+                        const todayStr = today.toISOString().split('T')[0];
+                        if (val === 'today') {
+                          setDashFilterFrom(todayStr);
+                          setDashFilterTo(todayStr);
+                        } else if (val === 'yesterday') {
+                          const y = new Date(today);
+                          y.setDate(y.getDate() - 1);
+                          setDashFilterFrom(y.toISOString().split('T')[0]);
+                          setDashFilterTo(y.toISOString().split('T')[0]);
+                        } else if (val === '7days') {
+                          const d7 = new Date(today);
+                          d7.setDate(d7.getDate() - 7);
+                          setDashFilterFrom(d7.toISOString().split('T')[0]);
+                          setDashFilterTo(todayStr);
+                        } else if (val === 'lastmonth') {
+                          const lmStart = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+                          const lmEnd = new Date(today.getFullYear(), today.getMonth(), 0);
+                          setDashFilterFrom(lmStart.toISOString().split('T')[0]);
+                          setDashFilterTo(lmEnd.toISOString().split('T')[0]);
+                        }
+                      }}
+                    >
+                      <option value="today">Today</option>
+                      <option value="custom">Custom Date Range</option>
+                      <option value="yesterday">Yesterday</option>
+                      <option value="7days">Last 7 Days</option>
+                      <option value="lastmonth">Last Month</option>
+                    </select>
+                    {dashDateRangeType === 'custom' && (
+                      <>
+                        <div style={{ position: 'relative' }}>
+                          <span style={{ position: 'absolute', left: '12px', top: '8px', color: '#50BDC9', fontSize: '14px' }}>📅</span>
+                          <input type="date" style={{ padding: '8px 12px 8px 36px', border: '1px solid #e0e0e0', borderRadius: '4px', color: '#757575', outline: 'none', background: 'var(--card)', fontSize: '13px' }} value={dashFilterFrom} onChange={(e) => setDashFilterFrom(e.target.value)} />
+                        </div>
+                        <span style={{ color: 'var(--text-muted)', fontSize: '14px' }}>to</span>
+                        <div style={{ position: 'relative' }}>
+                          <span style={{ position: 'absolute', left: '12px', top: '8px', color: '#50BDC9', fontSize: '14px' }}>📅</span>
+                          <input type="date" style={{ padding: '8px 12px 8px 36px', border: '1px solid #e0e0e0', borderRadius: '4px', color: '#757575', outline: 'none', background: 'var(--card)', fontSize: '13px' }} value={dashFilterTo} onChange={(e) => setDashFilterTo(e.target.value)} />
+                        </div>
+                      </>
+                    )}
+                  </div>
                 </div>
                 <div className="stats-grid">
                   {/* Total Disputes Card */}
