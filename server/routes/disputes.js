@@ -146,7 +146,11 @@ router.post('/:id/action', async (req, res) => {
       dispute.timeline.unshift({ by: req.headers['x-user-name'] || 'System', time: new Date().toISOString(), title: 'Accepted Liability', remarks: 'Merchant accepted the dispute loss.', file: null });
     } else if (action === 'contest') {
       dispute.mSubStatus = 'Chargeback in Progress';
-      dispute.merchantAction = 'evidence';
+      if (dispute.adminAction === 'considered') {
+        dispute.merchantAction = 'additional_evidence';
+      } else {
+        dispute.merchantAction = 'evidence';
+      }
       dispute.timeline.unshift({ by: req.headers['x-user-name'] || 'System', time: new Date().toISOString(), title: 'Evidence Submitted', remarks: comments || 'Evidence provided to fight dispute.', file: evidence || null });
     } else if (action === 'escalate') {
       dispute.mStatus = 'Pre-Arbitration';

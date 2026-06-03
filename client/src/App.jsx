@@ -1643,7 +1643,7 @@ function MerchantPortal({
                     <div>
                       <div className="tbl-toolbar">
                         <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
-                          {merchantDisputes.filter(cb => !cb.merchantAction).length} pending
+                          {merchantDisputes.filter(cb => !cb.merchantAction || cb.merchantAction === 'additional_evidence').length} pending
                         </span>
                       </div>
                       <div className="tbl-wrap">
@@ -1663,7 +1663,7 @@ function MerchantPortal({
                             </tr>
                           </thead>
                           <tbody>
-                            {merchantDisputes.filter(cb => !cb.merchantAction).map(cb => (
+                            {merchantDisputes.filter(cb => !cb.merchantAction || cb.merchantAction === 'additional_evidence').map(cb => (
                               <tr key={cb.id} style={{ borderBottom: '1px solid #eee' }}>
                                 <td style={{ padding: '12px 16px', color: '#50BDC9', fontWeight: '600' }}>{cb.caseId}</td>
                                 <td style={{ padding: '12px 16px', color: '#333' }}>{cb.rrn}</td>
@@ -1685,7 +1685,7 @@ function MerchantPortal({
                                 </td>
                               </tr>
                             ))}
-                            {merchantDisputes.filter(cb => !cb.merchantAction).length === 0 && (
+                            {merchantDisputes.filter(cb => !cb.merchantAction || cb.merchantAction === 'additional_evidence').length === 0 && (
                               <tr><td colSpan="10" style={{ textAlign: 'center', padding: '24px', color: 'var(--text-muted)' }}>✅ No pending documents</td></tr>
                             )}
                           </tbody>
@@ -2218,7 +2218,7 @@ function AdminPortal({
     });
 
     if (adminTab === 'merchant-pending') {
-      list = list.filter(cb => !cb.merchantAction);
+      list = list.filter(cb => !cb.merchantAction || cb.merchantAction === 'additional_evidence');
     } else if (adminTab === 'verification-pending') {
       list = list.filter(cb => (cb.merchantAction === 'evidence' || cb.merchantAction === 'rejected') && cb.adminAction === null);
     }
@@ -2379,10 +2379,45 @@ function AdminPortal({
 
       if (response.ok) {
         setActiveModal(null);
-        showToast('Declined. Re-routed to merchant.');
+        showToast('Dispute proofs declined. Rerouted to merchant.', 'success');
         await refreshAllData();
       } else {
-        showToast('Decline action failed', 'error');
+        showToast('Failed to decline proofs', 'error');
+      }
+    } catch (err) {
+      console.error(err);
+      showToast('API error', 'error');
+    }
+  };
+
+  // Process accept merchant documents
+  const handleAcceptDocs = async (disputeId) => {
+    const id = disputeId || targetDisputeId;
+    if (!id) return;
+    try {
+      const entry = {
+        by: 'nsdladmin',
+        time: new Date().toLocaleString(),
+        title: 'Merchant Documents Accepted',
+        remarks: 'Admin accepted the merchant\'s submitted documents. (Visa pending final resolution)',
+        file: null
+      };
+
+      const response = await fetch(`${API_URL}/disputes/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          adminAction: 'accepted_docs',
+          timelineEntry: entry
+        })
+      });
+
+      if (response.ok) {
+        setActiveModal(null);
+        showToast('Documents accepted successfully');
+        await refreshAllData();
+      } else {
+        showToast('Failed to accept documents', 'error');
       }
     } catch (err) {
       console.error(err);
@@ -3602,7 +3637,7 @@ function AdminPortal({
                     <div><div style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '3px' }}>Status</div><div>{renderStatusBadge(cb.mStatus)}</div></div>
                     <div><div style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '3px' }}>Merchant Action</div><div style={{ fontWeight: 600 }}>{cb.merchantAction || '—'}</div></div>
                   </div>
-                  {(cb.rejectReason || cb.merchantAction === 'evidence' || cb.merchantAction === 'rejected') ? (
+                  {(cb.rejectReason || cb.merchantAction === 'evidence' || cb.merchantAction === 'rejected' || cb.merchantAction === 'additional_evidence') ? (
                     <div>
                       <div style={{ fontSize: '12px', fontWeight: 600, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '6px' }}>Submitted Document</div>
                       <div className="remarks-doc">
@@ -3625,9 +3660,15 @@ function AdminPortal({
                   )}
                 </div>
                 <div className="modal-footer" style={{ justifyContent: 'flex-start', gap: '8px', flexWrap: 'wrap' }}>
-                  {isPendingVerification(cb) ? (
+                  {cb.merchantAction === 'additional_evidence' ? (
                     <>
-                      <button type="button" className="btn btn-success" style={{ flex: 1, minWidth: '140px' }} onClick={() => handleConsider(cb.id)}>Consider (Represent Case)</button>
+                      <button type="button" className="btn btn-primary" style={{ flex: 1, minWidth: '140px' }} onClick={() => handleAcceptDocs(cb.id)}>Accept</button>
+                      <button type="button" className="btn btn-warning" style={{ flex: 1, minWidth: '140px', background: '#eab308', color: '#fff', border: 'none' }} onClick={() => handleConsider(cb.id)}>Send to Visa for Review/Fight</button>
+                      <button type="button" className="btn btn-secondary" onClick={() => setActiveModal(null)}>Cancel</button>
+                    </>
+                  ) : isPendingVerification(cb) ? (
+                    <>
+                      <button type="button" className="btn btn-success" style={{ flex: 1, minWidth: '140px' }} onClick={() => handleConsider(cb.id)}>Submit Evidence to Visa (Fight to Win)</button>
                       <button type="button" className="btn btn-danger" style={{ flex: 1, minWidth: '140px' }} onClick={() => handleDecline(cb.id)}>Decline (Re-Route Merchant)</button>
                       <button type="button" className="btn btn-secondary" onClick={() => setActiveModal(null)}>Cancel</button>
                     </>
