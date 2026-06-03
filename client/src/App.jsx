@@ -2061,6 +2061,19 @@ function MerchantPortal({
 // ═════════════════════════════════════════════
 // ADMIN PORTAL DASHBOARD
 // ═════════════════════════════════════════════
+const webhookData = [
+  { id: 'WH-VISA-551029', event: 'DisputeCreatedEvent', time: '2024-05-26 10:14:02', typeLabel: 'Chargeback', typeColor: '#f57c00', typeBg: '#fff3e0', merchant: 'Nike India', amount: 'INR 14,999', status: '200 OK', statusColor: '#4caf50' },
+  { id: 'WH-VISA-551030', event: 'PreArbitrationFili...', time: '2024-05-15 10:15:02', typeLabel: 'Pre-Arbitration', typeColor: '#00acc1', typeBg: '#e0f7fa', merchant: 'Steam Games', amount: 'INR 3,250', status: '201 OK', statusColor: '#4caf50' },
+  { id: 'WH-VISA-551031', event: 'ArbitrationCaseFil...', time: '2024-05-02 10:10:01', typeLabel: 'Arbitration', typeColor: '#8e24aa', typeBg: '#f3e5f5', merchant: 'Reliance Retail', amount: 'INR 22,450', status: '200 OK', statusColor: '#4caf50' },
+  { id: 'WH-VISA-551032', event: 'RetrievalRequestIn...', time: '2024-05-01 10:00:03', typeLabel: 'Retrieval Request', typeColor: '#00897b', typeBg: '#e0f2f1', merchant: 'Nike India', amount: 'INR 8,599', status: '200 OK', statusColor: '#4caf50' },
+  { id: 'WH-VISA-551033', event: 'FraudAlertNotificati...', time: '2026-05-28 08:30:01', typeLabel: 'Fraud Alert', typeColor: '#c62828', typeBg: '#ffebee', merchant: 'masteruser', amount: 'INR 18,500', status: '200 OK', statusColor: '#4caf50' },
+  { id: 'WH-VISA-551034', event: 'DisputeResolvedEvent', time: '2026-05-27 14:22:11', typeLabel: 'Won', typeColor: '#2e7d32', typeBg: '#e8f5e9', merchant: 'Zomato Services', amount: 'INR 6,200', status: '201 OK', statusColor: '#4caf50' },
+  { id: 'WH-VISA-551035', event: 'ArbitrationOutcomeFil...', time: '2026-05-26 16:45:09', typeLabel: 'Arbitration', typeColor: '#8e24aa', typeBg: '#f3e5f5', merchant: 'masteruser', amount: 'INR 25,000', status: '⚠️ 408 Timeout', statusColor: '#ff9800' },
+  { id: 'WH-VISA-551036', event: 'PreArbitrationRespDue...', time: '2026-05-25 09:10:00', typeLabel: 'Pre-Arbitration', typeColor: '#00acc1', typeBg: '#e0f7fa', merchant: 'Paytm Mall', amount: 'INR 11,200', status: '❌ 500 Error', statusColor: '#f44336' },
+  { id: 'WH-VISA-551037', event: 'VROLInquiryReceived...', time: '2026-05-24 11:00:44', typeLabel: 'VROL Inquiry', typeColor: '#f57c00', typeBg: '#fff3e0', merchant: 'Test@isu', amount: 'INR 7,500', status: '200 OK', statusColor: '#4caf50' },
+  { id: 'WH-VISA-551038', event: 'DisputeStatusUpdate...', time: '2026-06-01 07:00:12', typeLabel: 'Status Update', typeColor: '#00897b', typeBg: '#e0f2f1', merchant: 'Myntra Fashion', amount: 'INR 9,200', status: '200 OK', statusColor: '#4caf50' }
+];
+
 function AdminPortal({
   currentUser, chargebacks, users, ledger, setView, toggleTheme, darkMode, formatINR, formatDateDisp, showToast, refreshAllData, resetAllSessions, handleLogout
 }) {
@@ -2071,6 +2084,7 @@ function AdminPortal({
 
   // Modal active
   const [activeModal, setActiveModal] = useState(null); // null | 'remarks' | 'arbitration' | 'refund' | 'visaRuling' | 'acceptPartially'
+  const [targetWebhook, setTargetWebhook] = useState(null);
   const [targetDisputeId, setTargetDisputeId] = useState(null);
   const [visaAcceptedAmount, setVisaAcceptedAmount] = useState('');
   const [visaRemarks, setVisaRemarks] = useState('');
