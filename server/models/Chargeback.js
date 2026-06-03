@@ -45,6 +45,7 @@ const chargebackSchema = new mongoose.Schema({
   chargbackId: { type: String, default: '' },
   adminName: { type: String, default: 'nsdladmin' },
   visaPending: { type: Boolean, default: false },
+  acceptedAmount: { type: Number, default: 0 },
   timeline: [timelineEntrySchema]
 }, { timestamps: true });
 

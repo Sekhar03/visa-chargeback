@@ -2070,8 +2070,11 @@ function AdminPortal({
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
 
   // Modal active
-  const [activeModal, setActiveModal] = useState(null); // null | 'remarks' | 'arbitration' | 'refund'
+  const [activeModal, setActiveModal] = useState(null); // null | 'remarks' | 'arbitration' | 'refund' | 'visaRuling' | 'acceptPartially'
   const [targetDisputeId, setTargetDisputeId] = useState(null);
+  const [visaAcceptedAmount, setVisaAcceptedAmount] = useState('');
+  const [visaRemarks, setVisaRemarks] = useState('');
+  const [visaEvidenceFile, setVisaEvidenceFile] = useState(null);
 
   // Form states
   const [selectedProvider, setSelectedProvider] = useState('');
@@ -2423,6 +2426,69 @@ function AdminPortal({
       console.error(err);
       showToast('API error', 'error');
     }
+  };
+
+  // Visa Workflow Handlers
+  const handleVisaAccept = async (disputeId) => {
+    const id = disputeId || targetDisputeId;
+    if (!id) return;
+    try {
+      const response = await fetch(`${API_URL}/disputes/${id}/action`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-user-role': 'admin', 'x-user-name': currentUser?.username || 'nsdladmin' },
+        body: JSON.stringify({ action: 'visa_accept' })
+      });
+      if (response.ok) {
+        setActiveModal(null);
+        showToast('Accepted and sent to Visa for final review');
+        await refreshAllData();
+      } else { showToast('Action failed', 'error'); }
+    } catch (err) { showToast('API error', 'error'); }
+  };
+
+  const handleVisaReview = async (disputeId) => {
+    const id = disputeId || targetDisputeId;
+    if (!id) return;
+    try {
+      const response = await fetch(`${API_URL}/disputes/${id}/action`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-user-role': 'admin', 'x-user-name': currentUser?.username || 'nsdladmin' },
+        body: JSON.stringify({ action: 'visa_review' })
+      });
+      if (response.ok) {
+        setActiveModal(null);
+        showToast('Sent to Visa for Review');
+        await refreshAllData();
+      } else { showToast('Action failed', 'error'); }
+    } catch (err) { showToast('API error', 'error'); }
+  };
+
+  const handleVisaAcceptPartially = async () => {
+    if (!targetDisputeId) return;
+    if (!visaAcceptedAmount || !visaRemarks || !visaEvidenceFile) {
+      showToast('Amount, Remarks, and Evidence are required for partial acceptance', 'error');
+      return;
+    }
+    try {
+      const response = await fetch(`${API_URL}/disputes/${targetDisputeId}/action`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-user-role': 'admin', 'x-user-name': currentUser?.username || 'nsdladmin' },
+        body: JSON.stringify({ 
+          action: 'visa_accept_partially',
+          acceptedAmount: Number(visaAcceptedAmount),
+          comments: visaRemarks,
+          evidence: visaEvidenceFile.name
+        })
+      });
+      if (response.ok) {
+        setActiveModal(null);
+        setVisaAcceptedAmount('');
+        setVisaRemarks('');
+        setVisaEvidenceFile(null);
+        showToast('Partial acceptance submitted to Visa');
+        await refreshAllData();
+      } else { showToast('Action failed', 'error'); }
+    } catch (err) { showToast('API error', 'error'); }
   };
 
   // Arbitration won decision
@@ -3660,21 +3726,71 @@ function AdminPortal({
                   )}
                 </div>
                 <div className="modal-footer" style={{ justifyContent: 'flex-start', gap: '8px', flexWrap: 'wrap' }}>
-                  {cb.merchantAction === 'additional_evidence' ? (
+                  {(cb.merchantAction === 'additional_evidence' || isPendingVerification(cb)) ? (
                     <>
-                      <button type="button" className="btn btn-primary" style={{ flex: 1, minWidth: '140px' }} onClick={() => handleAcceptDocs(cb.id)}>Accept</button>
-                      <button type="button" className="btn btn-warning" style={{ flex: 1, minWidth: '140px', background: '#eab308', color: '#fff', border: 'none' }} onClick={() => handleConsider(cb.id)}>Send to Visa for Review/Fight</button>
-                      <button type="button" className="btn btn-secondary" onClick={() => setActiveModal(null)}>Cancel</button>
-                    </>
-                  ) : isPendingVerification(cb) ? (
-                    <>
-                      <button type="button" className="btn btn-success" style={{ flex: 1, minWidth: '140px' }} onClick={() => handleConsider(cb.id)}>Submit Evidence to Visa (Fight to Win)</button>
-                      <button type="button" className="btn btn-danger" style={{ flex: 1, minWidth: '140px' }} onClick={() => handleDecline(cb.id)}>Decline (Re-Route Merchant)</button>
+                      <button type="button" className="btn btn-primary" style={{ flex: 1, minWidth: '140px' }} onClick={() => setActiveModal('visaRuling')}>Visa Ruling</button>
                       <button type="button" className="btn btn-secondary" onClick={() => setActiveModal(null)}>Cancel</button>
                     </>
                   ) : (
                     <button type="button" className="btn btn-secondary" style={{ width: '100%' }} onClick={() => setActiveModal(null)}>Close</button>
                   )}
+                </div>
+              </div>
+            );
+          })()}
+        </div>
+      )}
+
+      {activeModal === 'visaRuling' && (
+        <div className="overlay open">
+          {(() => {
+            const cb = chargebacks.find(x => x.id === targetDisputeId);
+            if (!cb) return null;
+            return (
+              <div className="modal">
+                <div className="modal-hdr"><h3>Visa Ruling</h3><button className="modal-close" onClick={() => setActiveModal(null)}>✕</button></div>
+                <div className="modal-body">
+                  <p style={{ color: 'var(--text-muted)', fontSize: '13px', marginBottom: '14px' }}>Please select how you would like to proceed with this dispute:</p>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                    <button className="btn btn-success" style={{ width: '100%', padding: '12px' }} onClick={() => handleVisaAccept(cb.id)}>Accept</button>
+                    <button className="btn btn-primary" style={{ width: '100%', padding: '12px' }} onClick={() => setActiveModal('acceptPartially')}>Accept Partially</button>
+                    <button className="btn btn-warning" style={{ width: '100%', padding: '12px', background: '#eab308', color: '#fff', border: 'none' }} onClick={() => handleVisaReview(cb.id)}>Send to Visa for Review / Fight</button>
+                  </div>
+                </div>
+                <div className="modal-footer">
+                  <button className="btn btn-secondary" style={{ width: '100%' }} onClick={() => setActiveModal('disputeDetails')}>Back</button>
+                </div>
+              </div>
+            );
+          })()}
+        </div>
+      )}
+
+      {activeModal === 'acceptPartially' && (
+        <div className="overlay open">
+          {(() => {
+            const cb = chargebacks.find(x => x.id === targetDisputeId);
+            if (!cb) return null;
+            return (
+              <div className="modal">
+                <div className="modal-hdr"><h3>Accept Partially</h3><button className="modal-close" onClick={() => setActiveModal(null)}>✕</button></div>
+                <div className="modal-body">
+                  <div className="mf">
+                    <label>Accepted Amount (Mandatory)</label>
+                    <input type="number" className="mfi" value={visaAcceptedAmount} onChange={(e) => setVisaAcceptedAmount(e.target.value)} placeholder="e.g. 500" />
+                  </div>
+                  <div className="mf" style={{ marginTop: '12px' }}>
+                    <label>Remarks (Mandatory)</label>
+                    <textarea className="mfi mfi-area" value={visaRemarks} onChange={(e) => setVisaRemarks(e.target.value)} placeholder="Reason for partial acceptance..."></textarea>
+                  </div>
+                  <div className="mf" style={{ marginTop: '12px' }}>
+                    <label>Evidence Upload (Mandatory)</label>
+                    <input type="file" className="form-control" onChange={(e) => setVisaEvidenceFile(e.target.files?.[0] || null)} />
+                  </div>
+                </div>
+                <div className="modal-footer" style={{ display: 'flex', gap: '10px' }}>
+                  <button className="btn btn-secondary" style={{ flex: 1 }} onClick={() => setActiveModal('visaRuling')}>Back</button>
+                  <button className="btn btn-primary" style={{ flex: 2 }} onClick={handleVisaAcceptPartially}>Submit and Send to Visa</button>
                 </div>
               </div>
             );

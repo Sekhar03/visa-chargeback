@@ -156,6 +156,22 @@ router.post('/:id/action', async (req, res) => {
       dispute.mStatus = 'Pre-Arbitration';
       dispute.mSubStatus = 'Pending Visa Review';
       dispute.timeline.unshift({ by: 'Admin', time: new Date().toISOString(), title: 'Escalated to Pre-Arb', remarks: 'Case sent to Visa for Pre-Arbitration.', file: null });
+    } else if (action === 'visa_accept') {
+      dispute.mSubStatus = 'Pending Visa Review';
+      dispute.adminAction = 'visa_accept';
+      dispute.visaPending = true;
+      dispute.timeline.unshift({ by: req.headers['x-user-name'] || 'System', time: new Date().toISOString(), title: 'Admin Accepted - Sent to Visa', remarks: 'Admin accepted the documents. Case forwarded to Visa for final ruling.', file: null });
+    } else if (action === 'visa_accept_partially') {
+      dispute.mSubStatus = 'Pending Visa Review';
+      dispute.adminAction = 'visa_accept_partially';
+      dispute.visaPending = true;
+      dispute.acceptedAmount = req.body.acceptedAmount || 0;
+      dispute.timeline.unshift({ by: req.headers['x-user-name'] || 'System', time: new Date().toISOString(), title: 'Admin Partially Accepted - Sent to Visa', remarks: `Accepted Amount: ${req.body.acceptedAmount}. Remarks: ${comments}`, file: evidence || null });
+    } else if (action === 'visa_review') {
+      dispute.mSubStatus = 'Pending Visa Review';
+      dispute.adminAction = 'visa_review';
+      dispute.visaPending = true;
+      dispute.timeline.unshift({ by: req.headers['x-user-name'] || 'System', time: new Date().toISOString(), title: 'Sent to Visa for Review', remarks: 'Admin disagrees with merchant submission. Case escalated to Visa for review.', file: null });
     }
 
     const updated = await dispute.save();
