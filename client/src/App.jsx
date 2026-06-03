@@ -3726,9 +3726,15 @@ function AdminPortal({
                   )}
                 </div>
                 <div className="modal-footer" style={{ justifyContent: 'flex-start', gap: '8px', flexWrap: 'wrap' }}>
-                  {(cb.merchantAction === 'additional_evidence' || isPendingVerification(cb)) ? (
+                  {cb.merchantAction === 'additional_evidence' ? (
                     <>
                       <button type="button" className="btn btn-primary" style={{ flex: 1, minWidth: '140px' }} onClick={() => setActiveModal('visaRuling')}>Visa Ruling</button>
+                      <button type="button" className="btn btn-secondary" onClick={() => setActiveModal(null)}>Cancel</button>
+                    </>
+                  ) : isPendingVerification(cb) ? (
+                    <>
+                      <button type="button" className="btn btn-success" style={{ flex: 1, minWidth: '140px' }} onClick={() => handleConsider(cb.id)}>Submit Evidence to Visa (Fight to Win)</button>
+                      <button type="button" className="btn btn-danger" style={{ flex: 1, minWidth: '140px' }} onClick={() => handleDecline(cb.id)}>Decline (Re-Route Merchant)</button>
                       <button type="button" className="btn btn-secondary" onClick={() => setActiveModal(null)}>Cancel</button>
                     </>
                   ) : (
