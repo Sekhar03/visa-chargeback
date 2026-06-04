@@ -1,102 +1,105 @@
 const { buildDefaultUsers, buildSeedLedger, PARTNER_ID } = require('./seed/demoData');
 
 let users = [];
-let chargebacks = [];
+let disputes = [];
+let documents = [];
+let representments = [];
+let preArbitrations = [];
+let arbitrations = [];
+let settlements = [];
+let timelines = [];
+let notifications = [];
 let ledger = [];
 
 function resetDemo() {
   const TODAY = new Date();
-  const { buildSeedData } = require('./routes/auth');
+  const demoData = require('./seed/demoData');
 
-  users = buildDefaultUsers().map((u) => ({
-    ...u,
-    _id: u.username,
-    toObject: () => ({ ...u, _id: u.username }),
-    save: async function save() { return this; }
-  }));
+  users = demoData.buildDefaultUsers().map(u => ({ ...u, _id: u.username }));
+  ledger = demoData.buildSeedLedger(TODAY).map(row => ({ ...row, _id: row.id }));
 
-  chargebacks = attachPartnerId(buildSeedData(TODAY)).map((cb) => ({
-    ...cb,
-    _id: cb.id,
-    toObject: () => ({ ...cb }),
-    save: async function save() {
-      const idx = chargebacks.findIndex((c) => c.id === this.id);
-      if (idx >= 0) chargebacks[idx] = { ...this };
-      return this;
-    }
-  }));
+  const vcrData = demoData.buildVCRSeedData(TODAY);
+  disputes = vcrData.disputes;
+  documents = vcrData.documents;
+  representments = vcrData.representments;
+  preArbitrations = vcrData.preArbitrations;
+  arbitrations = vcrData.arbitrations;
+  settlements = vcrData.settlements;
+  timelines = vcrData.timelines;
+  notifications = vcrData.notifications;
 
-  ledger = buildSeedLedger(TODAY).map((row) => ({
-    ...row,
-    _id: row.id
-  }));
-
-  return { users: users.length, chargebacks: chargebacks.length, ledger: ledger.length };
+  return { users: users.length, disputes: disputes.length, ledger: ledger.length };
 }
 
-function attachPartnerId(rows) {
-  return rows.map((cb) => ({ ...cb, partnerId: PARTNER_ID }));
-}
-
-function getUsers() {
-  return users.map((u) => {
-    const { toObject, save, ...rest } = u;
-    return { ...rest };
-  });
-}
-
-function findUser(query) {
-  if (query.username) return users.find((u) => u.username === query.username) || null;
-  return null;
-}
-
+function getUsers() { return users.map(u => ({ ...u })); }
+function findUser(query) { return users.find(u => u.username === query.username) || null; }
 function updateUserWallet(username, newBalance) {
-  const u = users.find((x) => x.username === username);
+  const u = users.find(x => x.username === username);
   if (u) u.walletBalance = newBalance;
 }
 
-function getChargebacks(query = {}) {
-  let list = [...chargebacks];
-  if (query.userName) list = list.filter((c) => c.userName === query.userName);
-  if (query.partnerId) list = list.filter((c) => c.partnerId === query.partnerId);
-  if (query.id) list = list.filter((c) => c.id === query.id);
-  return list.map((c) => {
-    const { save, toObject, ...rest } = c;
-    return { ...rest };
-  }).sort((a, b) => (b.createdDate || '').localeCompare(a.createdDate || ''));
+function getDisputes(query = {}) {
+  let list = [...disputes];
+  if (query.userName) list = list.filter(c => c.userName === query.userName);
+  if (query.partnerId) list = list.filter(c => c.partnerId === query.partnerId);
+  if (query.id) list = list.filter(c => c.id === query.id);
+  if (query.status) list = list.filter(c => c.status === query.status);
+  return list.sort((a, b) => (b.createdDate || '').localeCompare(a.createdDate || ''));
 }
+function findDisputeById(id) { return disputes.find(c => c.id === id) || null; }
+function updateDispute(id, updates) {
+  const idx = disputes.findIndex(d => d.id === id);
+  if (idx > -1) {
+    disputes[idx] = { ...disputes[idx], ...updates };
+    return disputes[idx];
+  }
+  return null;
+}
+function addDispute(d) { disputes.push(d); return d; }
 
-function findChargebackById(id) {
-  return chargebacks.find((c) => c.id === id) || null;
+// Helper collections CRUD
+function getDocuments(disputeId) { return documents.filter(d => d.disputeId === disputeId); }
+function addDocument(doc) { documents.push(doc); return doc; }
+
+function getRepresentment(disputeId) { return representments.find(r => r.disputeId === disputeId) || null; }
+function addRepresentment(r) { representments.push(r); return r; }
+
+function getPreArbitration(disputeId) { return preArbitrations.find(p => p.disputeId === disputeId) || null; }
+function addPreArbitration(p) { preArbitrations.push(p); return p; }
+
+function getArbitration(disputeId) { return arbitrations.find(a => a.disputeId === disputeId) || null; }
+function addArbitration(a) { arbitrations.push(a); return a; }
+
+function getSettlement(disputeId) { return settlements.find(s => s.disputeId === disputeId) || null; }
+function addSettlement(s) { settlements.push(s); return s; }
+
+function getTimeline(disputeId) { 
+  return timelines.filter(t => t.disputeId === disputeId)
+    .sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt)); 
 }
+function addTimeline(t) { timelines.push({ ...t, createdAt: new Date() }); return t; }
 
 function getLedger(query = {}) {
   let list = [...ledger];
-  if (query.merchant) list = list.filter((l) => l.merchant === query.merchant);
+  if (query.merchant) list = list.filter(l => l.merchant === query.merchant);
   return list.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
 }
+function addLedgerEntry(entry) { ledger.unshift({ ...entry, _id: entry.id }); return entry; }
+function countLedger() { return ledger.length; }
 
-function addLedgerEntry(entry) {
-  ledger.unshift({ ...entry, _id: entry.id });
-  return entry;
-}
-
-function countLedger() {
-  return ledger.length;
-}
-
-// Preload demo data for cold starts (refreshed again when MOCK_MODE is confirmed)
+// Preload demo data for cold starts
 resetDemo();
 
 module.exports = {
   PARTNER_ID,
   resetDemo,
-  getUsers,
-  findUser,
-  updateUserWallet,
-  getChargebacks,
-  findChargebackById,
-  getLedger,
-  addLedgerEntry,
-  countLedger
+  getUsers, findUser, updateUserWallet,
+  getDisputes, findDisputeById, updateDispute, addDispute,
+  getDocuments, addDocument,
+  getRepresentment, addRepresentment,
+  getPreArbitration, addPreArbitration,
+  getArbitration, addArbitration,
+  getSettlement, addSettlement,
+  getTimeline, addTimeline,
+  getLedger, addLedgerEntry, countLedger
 };
