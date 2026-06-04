@@ -1578,7 +1578,7 @@ function MerchantPortal({
                       <label>Dispute Type</label>
                       <select className="sp-input" value={reportFilter.disputeType}
                         onChange={(e) => setReportFilter(prev => ({ ...prev, disputeType: e.target.value }))}>
-                        <option value="">Dispute Type</option>
+                        <option value="">Select Dispute Type</option>
                         <option value="Chargeback">Chargeback</option>
                         <option value="Pre-Arbitration">Pre-Arbitration</option>
                         <option value="Retrieval Request">Retrieval Request</option>
@@ -1589,6 +1589,7 @@ function MerchantPortal({
                       <label>Aggregator</label>
                       <select className="sp-input" value={reportFilter.provider}
                         onChange={(e) => setReportFilter(prev => ({ ...prev, provider: e.target.value }))}>
+                        <option value="">Select Aggregator</option>
                         <option value="ISU">ISU</option>
                       </select>
                     </div>
@@ -1596,6 +1597,7 @@ function MerchantPortal({
                       <label>Scheme</label>
                       <select className="sp-input" value={reportFilter.scheme}
                         onChange={(e) => setReportFilter(prev => ({ ...prev, scheme: e.target.value }))}>
+                        <option value="">Select Scheme</option>
                         <option value="Visa">Visa</option>
                       </select>
                     </div>
@@ -1603,7 +1605,7 @@ function MerchantPortal({
                       <label>Dispute Status</label>
                       <select className="sp-input" value={reportFilter.disputeStatus}
                         onChange={(e) => setReportFilter(prev => ({ ...prev, disputeStatus: e.target.value }))}>
-                        <option value="">Dispute Status</option>
+                        <option value="">Select Dispute Status</option>
                         <option value="Dispute Won Partially">Dispute Won Partially</option>
                         <option value="Dispute Won Fully">Dispute Won Fully</option>
                         <option value="Dispute Lost – TAT Expired">Dispute Lost – TAT Expired</option>
@@ -1617,7 +1619,7 @@ function MerchantPortal({
                       <label>Search By</label>
                       <select className="sp-input" value={reportFilter.searchBy}
                         onChange={(e) => setReportFilter(prev => ({ ...prev, searchBy: e.target.value }))}>
-                        <option value="">Search By</option>
+                        <option value="">Select Search By</option>
                         <option value="Txn ID">Transaction ID (Txn ID)</option>
                         <option value="RRN">RRN</option>
                         <option value="TID">TID</option>
@@ -1625,12 +1627,14 @@ function MerchantPortal({
                         <option value="Case ID">Case ID</option>
                       </select>
                     </div>
-                    <div className="sp-field">
-                      <label>Search</label>
-                      <input type="text" className="sp-input" placeholder="Search..."
-                        value={reportFilter.searchText}
-                        onChange={(e) => setReportFilter(prev => ({ ...prev, searchText: e.target.value }))} />
-                    </div>
+                    {reportFilter.searchBy && (
+                      <div className="sp-field">
+                        <label>Search {reportFilter.searchBy}</label>
+                        <input type="text" className="sp-input" placeholder={`Enter ${reportFilter.searchBy}`}
+                          value={reportFilter.searchText}
+                          onChange={(e) => setReportFilter(prev => ({ ...prev, searchText: e.target.value }))} />
+                      </div>
+                    )}
                     <div className="sp-field" style={{ visibility: 'hidden' }}></div>
                   </div>
                   <div className="search-panel-actions">
