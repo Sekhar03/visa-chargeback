@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
-const Dispute = require('../models/Dispute');
+const Chargeback = require('../models/Chargeback');
 
 // Fetch all users
 router.get('/', async (req, res) => {
@@ -821,24 +821,24 @@ router.get('/bootstrap', async (req, res) => {
     if (global.MOCK_MODE) {
       return res.json({
         users: mockStore.getUsers(),
-        disputes: mockStore.getDisputes({}),
+        chargebacks: mockStore.getChargebacks({}),
         ledger: mockStore.getLedger({})
       });
     }
 
     const Ledger = require('../models/Ledger');
     let users = await User.find({});
-    let disputes = await Dispute.find({});
+    let chargebacks = await Chargeback.find({});
     let ledger = await Ledger.find({});
 
-    if (disputes.length === 0) {
+    if (chargebacks.length === 0) {
       await require('../seed/demoData').seedAllDemoData();
       users = await User.find({});
-      disputes = await Dispute.find({});
+      chargebacks = await Chargeback.find({});
       ledger = await Ledger.find({});
     }
 
-    res.json({ users, disputes, ledger });
+    res.json({ users, chargebacks, ledger });
   } catch (error) {
     try {
       global.MOCK_MODE = true;
@@ -846,7 +846,7 @@ router.get('/bootstrap', async (req, res) => {
       mockStore.resetDemo();
       return res.json({
         users: mockStore.getUsers(),
-        disputes: mockStore.getDisputes({}),
+        chargebacks: mockStore.getChargebacks({}),
         ledger: mockStore.getLedger({})
       });
     } catch (fallbackErr) {
@@ -891,3 +891,5 @@ router.get('/:username', async (req, res) => {
 });
 
 module.exports = router;
+module.exports.buildSeedData = buildSeedData;
+

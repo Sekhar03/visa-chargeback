@@ -1,8 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { CLIENT_DEMO } from './demoFallback.js';
-import MerchantVCR from './components/MerchantVCR.jsx';
-import AdminVCR from './components/AdminVCR.jsx';
-
 
 // API BASE URL
 const API_URL = import.meta.env.VITE_API_URL || '/api';
@@ -292,9 +289,9 @@ export default function App() {
       )}
       
       {view === 'merchant' && currentUser && (
-        <MerchantVCR 
+        <MerchantPortal 
           currentUser={currentUser} 
-          disputes={chargebacks} 
+          chargebacks={chargebacks} 
           users={users}
           setView={setView} 
           toggleTheme={toggleTheme} 
@@ -309,9 +306,9 @@ export default function App() {
       )}
       
       {view === 'admin' && currentUser && (
-        <AdminVCR 
+        <AdminPortal 
           currentUser={currentUser} 
-          disputes={chargebacks} 
+          chargebacks={chargebacks} 
           users={users}
           ledger={ledger}
           setView={setView} 

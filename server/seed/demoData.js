@@ -1,13 +1,6 @@
-const Dispute = require('../models/Dispute');
-const DisputeDocument = require('../models/DisputeDocument');
-const Representment = require('../models/Representment');
-const PreArbitration = require('../models/PreArbitration');
-const Arbitration = require('../models/Arbitration');
-const Settlement = require('../models/Settlement');
-const DisputeTimeline = require('../models/DisputeTimeline');
-const Notification = require('../models/Notification');
-const Ledger = require('../models/Ledger');
 const User = require('../models/User');
+const Chargeback = require('../models/Chargeback');
+const Ledger = require('../models/Ledger');
 
 const PARTNER_ID = 'partneruser';
 
@@ -25,104 +18,23 @@ const buildSeedLedger = (TODAY) => {
     d.setDate(d.getDate() - n);
     return fmtDate(d);
   };
-  return [];
+
+  return [
+    { id: 'ADJ101', merchant: 'masteruser', type: 'Debit', amount: 1000, date: daysAgo(1), remarks: 'Lien hold — CB001 VISA chargeback' },
+    { id: 'ADJ102', merchant: 'masteruser', type: 'Debit', amount: 3000, date: daysAgo(2), remarks: 'Lien hold — CB002 VISA chargeback' },
+    { id: 'ADJ103', merchant: 'masteruser', type: 'Credit', amount: 8500, date: daysAgo(10), remarks: 'Dispute won credit — CB007 refund to wallet' },
+    { id: 'ADJ104', merchant: 'masteruser', type: 'Debit', amount: 15000, date: daysAgo(0), remarks: 'Fraud lien — CB016 high-value alert' },
+    { id: 'ADJ105', merchant: 'Test@isu', type: 'Debit', amount: 3200, date: daysAgo(1), remarks: 'Lien hold — CB033 Rupay chargeback' },
+    { id: 'ADJ106', merchant: 'Test@isu', type: 'Credit', amount: 8900, date: daysAgo(8), remarks: 'Dispute won — CB035 Mastercard ruling' },
+    { id: 'ADJ107', merchant: 'masteruser', type: 'Debit', amount: 1600, date: daysAgo(8), remarks: 'Merchant accepted refund — CB039' },
+    { id: 'ADJ108', merchant: 'Test@isu', type: 'Credit', amount: 3000, date: daysAgo(5), remarks: 'NPCI won — CB028 Rupay dispute' },
+    { id: 'ADJ109', merchant: 'masteruser', type: 'Debit', amount: 18500, date: daysAgo(12), remarks: 'Fraud lost — CB029 wallet debit' },
+    { id: 'ADJ110', merchant: 'masteruser', type: 'Credit', amount: 2500, date: daysAgo(4), remarks: 'Manual admin credit — representment fee reversal' }
+  ];
 };
 
-const buildVCRSeedData = (TODAY) => {
-  const fmtDate = d => d.toISOString().split('T')[0];
-  const dA = n => { let d = new Date(TODAY); d.setDate(d.getDate() - n); return fmtDate(d); };
-  const dL = n => fmtDate(new Date(TODAY.getTime() + n * 86400000));
-
-  const disputes = [];
-  const documents = [];
-  const representments = [];
-  const preArbitrations = [];
-  const arbitrations = [];
-  const settlements = [];
-  const timelines = [];
-  const notifications = [];
-
-  const addTimeline = (disputeId, actionBy, actionType, remarks) => {
-    timelines.push({ disputeId, actionBy, actionType, remarks, createdAt: new Date() });
-  };
-
-  // CB001 - DISPUTE_RECEIVED
-  disputes.push({
-    id: 'CB001', caseId: 'CASE000001', userName: 'masteruser', userId: '2575789089',
-    rrn: '6093156553', txnId: '8768987', terminalId: '5683583',
-    createdDate: dA(1), txnDate: dA(5), respondByDate: dL(8),
-    status: 'DISPUTE_RECEIVED', partnerId: null, txnAmt: 1000, currency: 'INR',
-    reasonCode: '10.4', product: 'VISA'
-  });
-  addTimeline('CB001', 'Visa', 'DISPUTE_CREATED', 'Dispute received from Visa');
-
-  // CB002 - EVIDENCE_SUBMITTED
-  disputes.push({
-    id: 'CB002', caseId: 'CASE000002', userName: 'masteruser', userId: '2575789089',
-    rrn: '6093152984', txnId: '8768988', terminalId: '5688584',
-    createdDate: dA(2), txnDate: dA(6), respondByDate: dL(7),
-    status: 'EVIDENCE_SUBMITTED', partnerId: null, txnAmt: 3000, currency: 'INR',
-    reasonCode: '13.1', product: 'VISA'
-  });
-  documents.push({ disputeId: 'CB002', documentId: 'doc_1', filename: 'evidence.pdf', status: 'PENDING_REVIEW', uploadedBy: 'masteruser' });
-  addTimeline('CB002', 'masteruser', 'EVIDENCE_UPLOADED', 'Merchant uploaded evidence');
-
-  // CB003 - REPRESENTMENT_SUBMITTED
-  disputes.push({
-    id: 'CB003', caseId: 'CASE000003', userName: 'masteruser', userId: '2575789089',
-    rrn: '6093152911', txnId: '8768989', terminalId: '5678585',
-    createdDate: dA(10), txnDate: dA(15), respondByDate: dA(2),
-    status: 'REPRESENTMENT_SUBMITTED', partnerId: null, txnAmt: 1500, currency: 'INR',
-    reasonCode: '10.4', product: 'VISA'
-  });
-  documents.push({ disputeId: 'CB003', documentId: 'doc_2', filename: 'receipt.pdf', status: 'ACCEPTED', uploadedBy: 'masteruser' });
-  representments.push({ disputeId: 'CB003', submittedBy: 'Admin', status: 'SUBMITTED', visaReference: 'VROL123' });
-  addTimeline('CB003', 'Admin', 'REPRESENTMENT_SUBMITTED', 'Sent to Visa for Review');
-
-  // CB004 - PRE_ARBITRATION_RECEIVED
-  disputes.push({
-    id: 'CB004', caseId: 'CASE000004', userName: 'masteruser', userId: '2575789089',
-    rrn: '6093152992', txnId: '8768990', terminalId: '5688585',
-    createdDate: dA(4), txnDate: dA(8), respondByDate: dL(3),
-    status: 'PRE_ARBITRATION_RECEIVED', partnerId: null, txnAmt: 2500, currency: 'INR',
-    reasonCode: '10.5', product: 'VISA'
-  });
-  preArbitrations.push({ disputeId: 'CB004', visaRemarks: 'Evidence rejected by issuer', merchantResponse: 'PENDING' });
-  addTimeline('CB004', 'Visa', 'PRE_ARBITRATION_RECEIVED', 'Issuer declined representment');
-
-  // CB005 - ARBITRATION
-  disputes.push({
-    id: 'CB005', caseId: 'CASE000005', userName: 'masteruser', userId: '2575789089',
-    rrn: '6093152993', txnId: '8768991', terminalId: '5683583',
-    createdDate: dA(5), txnDate: dA(9), respondByDate: dL(2),
-    status: 'ARBITRATION', partnerId: null, txnAmt: 500, currency: 'INR',
-    reasonCode: '13.1', product: 'VISA'
-  });
-  arbitrations.push({ disputeId: 'CB005', referenceNumber: 'ARB555', feeAmount: 500, winner: null });
-  addTimeline('CB005', 'Admin', 'ARBITRATION_FILED', 'Escalated to Visa Arbitration');
-
-  // CB006 - CASE_CLOSED (Lost)
-  disputes.push({
-    id: 'CB006', caseId: 'CASE000006', userName: 'masteruser', userId: '2575789089',
-    rrn: '6093152994', txnId: '8768992', terminalId: '5688584',
-    createdDate: dA(6), txnDate: dA(10), respondByDate: dL(4),
-    status: 'CASE_CLOSED', partnerId: null, txnAmt: 3000, currency: 'INR',
-    reasonCode: '10.4', product: 'VISA'
-  });
-  settlements.push({ disputeId: 'CB006', originalAmount: 3000, chargebackAmount: 3000, adjustmentAmount: -3000, status: 'SETTLEMENT_COMPLETED' });
-  addTimeline('CB006', 'System', 'CASE_CLOSED', 'Merchant accepted the loss');
-
-  return {
-    disputes,
-    documents,
-    representments,
-    preArbitrations,
-    arbitrations,
-    settlements,
-    timelines,
-    notifications
-  };
-};
+const attachPartnerId = (chargebacks) =>
+  chargebacks.map((cb) => ({ ...cb, partnerId: PARTNER_ID }));
 
 async function seedAllDemoData() {
   if (global.MOCK_MODE) {
@@ -133,35 +45,22 @@ async function seedAllDemoData() {
 
   try {
     await User.deleteMany({});
-    await Dispute.deleteMany({});
-    await DisputeDocument.deleteMany({});
-    await Representment.deleteMany({});
-    await PreArbitration.deleteMany({});
-    await Arbitration.deleteMany({});
-    await Settlement.deleteMany({});
-    await DisputeTimeline.deleteMany({});
-    await Notification.deleteMany({});
+    await Chargeback.deleteMany({});
     await Ledger.deleteMany({});
 
     const users = buildDefaultUsers();
     await User.insertMany(users);
 
-    const vcrData = buildVCRSeedData(TODAY);
-    await Dispute.insertMany(vcrData.disputes);
-    await DisputeDocument.insertMany(vcrData.documents);
-    await Representment.insertMany(vcrData.representments);
-    await PreArbitration.insertMany(vcrData.preArbitrations);
-    await Arbitration.insertMany(vcrData.arbitrations);
-    await Settlement.insertMany(vcrData.settlements);
-    await DisputeTimeline.insertMany(vcrData.timelines);
-    await Notification.insertMany(vcrData.notifications);
+    const { buildSeedData } = require('../routes/auth');
+    const chargebacks = attachPartnerId(buildSeedData(TODAY));
+    await Chargeback.insertMany(chargebacks);
 
     const ledger = buildSeedLedger(TODAY);
-    if(ledger.length > 0) await Ledger.insertMany(ledger);
+    await Ledger.insertMany(ledger);
 
     return {
       users: users.length,
-      disputes: vcrData.disputes.length,
+      chargebacks: chargebacks.length,
       ledger: ledger.length
     };
   } catch (err) {
@@ -175,6 +74,5 @@ module.exports = {
   PARTNER_ID,
   buildDefaultUsers,
   buildSeedLedger,
-  buildVCRSeedData,
   seedAllDemoData
 };
