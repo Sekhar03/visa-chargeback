@@ -136,7 +136,13 @@ router.put('/:id', async (req, res) => {
 router.post('/:id/action', async (req, res) => {
   try {
     const { action, evidence, comments } = req.body;
-    const dispute = await Chargeback.findOne({ id: req.params.id });
+    let dispute;
+    if (global.MOCK_MODE) {
+      const mockStore = require('../mockStore');
+      dispute = mockStore.findChargebackById(req.params.id);
+    } else {
+      dispute = await Chargeback.findOne({ id: req.params.id });
+    }
     if (!dispute) return res.status(404).json({ message: 'Dispute not found' });
 
     if (action === 'accept') {
