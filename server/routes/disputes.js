@@ -93,7 +93,7 @@ router.put('/:id', async (req, res) => {
       if (!dispute) return res.status(404).json({ message: 'Dispute not found' });
       const updates = req.body;
       if (updates.merchantAction !== undefined) dispute.merchantAction = updates.merchantAction;
-      if (updates.adminAction !== undefined) dispute.adminAction = updates.adminAction;
+      if (updates.acquirerAction !== undefined) dispute.acquirerAction = updates.acquirerAction;
       if (updates.mStatus !== undefined) dispute.mStatus = updates.mStatus;
       if (updates.mSubStatus !== undefined) dispute.mSubStatus = updates.mSubStatus;
       if (updates.rejectReason !== undefined) dispute.rejectReason = updates.rejectReason;
@@ -115,7 +115,7 @@ router.put('/:id', async (req, res) => {
     const updates = req.body;
     
     if (updates.merchantAction !== undefined) dispute.merchantAction = updates.merchantAction;
-    if (updates.adminAction !== undefined) dispute.adminAction = updates.adminAction;
+    if (updates.acquirerAction !== undefined) dispute.acquirerAction = updates.acquirerAction;
     if (updates.mStatus !== undefined) dispute.mStatus = updates.mStatus;
     if (updates.mSubStatus !== undefined) dispute.mSubStatus = updates.mSubStatus;
     if (updates.rejectReason !== undefined) dispute.rejectReason = updates.rejectReason;
@@ -147,7 +147,7 @@ router.post('/:id/action', async (req, res) => {
     } else if (action === 'admin_request_info') {
       const { rejectedDocs } = req.body;
       dispute.mSubStatus = 'Document Pending from Merchant';
-      dispute.adminAction = 'request_info';
+      dispute.acquirerAction = 'request_info';
       
       if (Array.isArray(rejectedDocs)) {
         rejectedDocs.forEach(rdoc => {
@@ -163,12 +163,12 @@ router.post('/:id/action', async (req, res) => {
       dispute.timeline.unshift({ by: req.headers['x-user-name'] || 'System', time: new Date().toISOString(), title: 'Documents Rejected / More Info Requested', remarks: comments || 'Admin requested more information from the merchant.', file: null });
     } else if (action === 'contest') {
       dispute.mSubStatus = 'Document Pending Verification';
-      if (dispute.adminAction === 'considered') {
+      if (dispute.acquirerAction === 'considered') {
         dispute.merchantAction = 'additional_evidence';
       } else {
         dispute.merchantAction = 'evidence';
       }
-      dispute.adminAction = null;
+      dispute.acquirerAction = null;
       
       let fileString = null;
       if (Array.isArray(evidence)) {
@@ -198,23 +198,23 @@ router.post('/:id/action', async (req, res) => {
       dispute.timeline.unshift({ by: 'Admin', time: new Date().toISOString(), title: 'Escalated to Pre-Arb', remarks: 'Case sent to Visa for Pre-Arbitration.', file: null });
     } else if (action === 'visa_accept') {
       dispute.mSubStatus = 'Submitted to Visa';
-      dispute.adminAction = 'visa_accept';
+      dispute.acquirerAction = 'visa_accept';
       dispute.visaPending = true;
       dispute.timeline.unshift({ by: req.headers['x-user-name'] || 'System', time: new Date().toISOString(), title: 'Admin Accepted - Sent to Visa', remarks: 'Admin accepted the documents. Case forwarded to Visa for final ruling.', file: null });
     } else if (action === 'visa_accept_partially') {
       dispute.mSubStatus = 'Submitted to Visa';
-      dispute.adminAction = 'visa_accept_partially';
+      dispute.acquirerAction = 'visa_accept_partially';
       dispute.visaPending = true;
       dispute.acceptedAmount = req.body.acceptedAmount || 0;
       dispute.timeline.unshift({ by: req.headers['x-user-name'] || 'System', time: new Date().toISOString(), title: 'Admin Partially Accepted - Sent to Visa', remarks: `Accepted Amount: ${req.body.acceptedAmount}. Remarks: ${comments}`, file: evidence || null });
     } else if (action === 'visa_review') {
       dispute.mSubStatus = 'Submitted to Visa';
-      dispute.adminAction = 'visa_review';
+      dispute.acquirerAction = 'visa_review';
       dispute.visaPending = true;
       dispute.timeline.unshift({ by: req.headers['x-user-name'] || 'System', time: new Date().toISOString(), title: 'Sent to Visa for Review', remarks: 'Admin disagrees with merchant submission. Case escalated to Visa for review.', file: null });
     } else if (action === 'admin_upload_evidence') {
       dispute.mSubStatus = 'Document Pending from Merchant';
-      dispute.adminAction = 'evidence_uploaded';
+      dispute.acquirerAction = 'evidence_uploaded';
       dispute.merchantAction = 'pending_admin_review';
       
       let fileString = null;
@@ -244,7 +244,7 @@ router.post('/:id/action', async (req, res) => {
     } else if (action === 'merchant_accept_admin') {
       dispute.mSubStatus = 'Document Pending Verification';
       dispute.merchantAction = 'accepted_admin';
-      dispute.adminAction = null; // Send back to admin for final Visa routing
+      dispute.acquirerAction = null; // Send back to admin for final Visa routing
       
       // Update all pending Admin docs to Accepted
       dispute.documents.forEach(doc => {
@@ -257,7 +257,7 @@ router.post('/:id/action', async (req, res) => {
     } else if (action === 'merchant_reject_admin') {
       dispute.mSubStatus = 'Document Pending Verification';
       dispute.merchantAction = 'rejected_admin';
-      dispute.adminAction = null;
+      dispute.acquirerAction = null;
       
       const { rejectedDocs } = req.body;
       if (Array.isArray(rejectedDocs)) {
