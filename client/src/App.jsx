@@ -519,7 +519,9 @@ function MerchantPortal({
     let d = new Date(); d.setDate(d.getDate() - 30); return d.toISOString().split('T')[0];
   })();
 
-  const [dashFilter, setDashFilter] = useState({ from: DEFAULT_FROM, to: TODAY_STR });
+  const [dashDateRangeType, setDashDateRangeType] = useState('7days');
+  const [dashFilterFrom, setDashFilterFrom] = useState(() => { let d = new Date(); d.setDate(d.getDate() - 7); return d.toISOString().split('T')[0]; });
+  const [dashFilterTo, setDashFilterTo] = useState(TODAY_STR);
   const [respondFilter, setRespondFilter] = useState({ from: DEFAULT_FROM, to: TODAY_STR, rrn: '', txnId: '', status: '', subStatus: '', disputeType: '', scheme: '' });
   const [raisedFilter, setRaisedFilter] = useState({ from: DEFAULT_FROM, to: TODAY_STR, rrn: '', txnId: '', status: '', subStatus: '', disputeType: '', scheme: '' });
   const [reportFilter, setReportFilter] = useState({ from: DEFAULT_FROM, to: TODAY_STR, provider: '', disputeType: '', scheme: '', disputeStatus: '', searchBy: '', searchText: '' });
@@ -4206,6 +4208,9 @@ function PartnerPortal({
   const DEFAULT_FROM = (() => { let d = new Date(); d.setDate(d.getDate() - 30); return d.toISOString().split('T')[0]; })();
   const [filterFrom, setFilterFrom] = useState(DEFAULT_FROM);
   const [filterTo, setFilterTo] = useState(TODAY_STR);
+  const [dashDateRangeType, setDashDateRangeType] = useState('7days');
+  const [dashFilterFrom, setDashFilterFrom] = useState(() => { let d = new Date(); d.setDate(d.getDate() - 7); return d.toISOString().split('T')[0]; });
+  const [dashFilterTo, setDashFilterTo] = useState(TODAY_STR);
   const [filterStatus, setFilterStatus] = useState('');
   const [filterScheme, setFilterScheme] = useState('');
   const [filterDisputeType, setFilterDisputeType] = useState('');
