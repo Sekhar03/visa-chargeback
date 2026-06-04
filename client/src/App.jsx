@@ -845,7 +845,7 @@ function MerchantPortal({
         if (!reportFilter.searchBy && !cb.rrn?.toLowerCase().includes(q) && !cb.txnId?.toLowerCase().includes(q) && !cb.userId?.toLowerCase().includes(q) && !cb.id?.toLowerCase().includes(q)) return false;
       }
       if (reportFilter.disputeStatus && cb.mStatus !== reportFilter.disputeStatus) return false;
-      if (reportFilter.disputeType && cb.mSubStatus !== reportFilter.disputeType) return false;
+      if (reportFilter.disputeType && !(cb.adjType && cb.adjType.includes(reportFilter.disputeType) && !(reportFilter.disputeType === 'Arbitration' && cb.adjType.includes('Pre-Arbitration')))) return false;
       if (reportFilter.from && cb.createdDate && cb.createdDate < reportFilter.from) return false;
       if (reportFilter.to && cb.createdDate && cb.createdDate > reportFilter.to) return false;
       return true;
@@ -1899,7 +1899,7 @@ function MerchantPortal({
                       <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}><span style={{ color: '#9e9e9e' }}>Remaining Days <span style={{color:'red'}}>*</span> :</span> <strong style={{color: '#000', width: '140px'}}>{cb.aging}</strong></div>
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}><span style={{ color: '#9e9e9e' }}>Dispute Type <span style={{color:'red'}}>*</span> :</span> <strong style={{color: '#000', width: '140px', textTransform: 'uppercase'}}>{cb.mSubStatus || cb.mStatus}</strong></div>
+                      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}><span style={{ color: '#9e9e9e' }}>Dispute Type <span style={{color:'red'}}>*</span> :</span> <strong style={{color: '#000', width: '140px', textTransform: 'uppercase'}}>{cb.adjType}</strong></div>
                       <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}><span style={{ color: '#9e9e9e' }}>Dispute Description <span style={{color:'red'}}>*</span> :</span> <strong style={{color: '#000', width: '140px'}}>13.1-Services Not Provided or Merchandise Not Received</strong></div>
                       <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '16px' }}><span style={{ color: '#9e9e9e' }}>Source Amount <span style={{color:'red'}}>*</span> :</span> <strong style={{color: '#000', width: '140px'}}>{cb.txnAmt}</strong></div>
                       <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}><span style={{ color: '#9e9e9e' }}>Re-presentment Received Date Credit <span style={{color:'red'}}>*</span> :</span> <strong style={{color: '#000', width: '140px'}}>-</strong></div>
@@ -2340,7 +2340,7 @@ function AdminPortal({
         if (!filterSearchBy && !cb.rrn.includes(filterRrn) && !cb.txnId.includes(filterRrn) && !cb.userId.includes(filterRrn) && !cb.id?.includes(filterRrn) && !cb.userName?.toLowerCase().includes(filterRrn.toLowerCase())) return false;
       }
       if (filterStatus && cb.mStatus !== filterStatus) return false;
-      if (filterSubStatus && cb.mSubStatus !== filterSubStatus) return false;
+      if (filterSubStatus && !(cb.adjType && cb.adjType.includes(filterSubStatus) && !(filterSubStatus === 'Arbitration' && cb.adjType.includes('Pre-Arbitration')))) return false;
       if (filterFrom && cb.createdDate && cb.createdDate < filterFrom) return false;
       if (filterTo && cb.createdDate && cb.createdDate > filterTo) return false;
       return true;
@@ -3680,7 +3680,7 @@ function AdminPortal({
                       <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}><span style={{ color: '#9e9e9e' }}>Remaining Days <span style={{color:'red'}}>*</span> :</span> <strong style={{color: '#000', width: '140px'}}>{cb.aging}</strong></div>
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}><span style={{ color: '#9e9e9e' }}>Dispute Type <span style={{color:'red'}}>*</span> :</span> <strong style={{color: '#000', width: '140px', textTransform: 'uppercase'}}>{cb.mSubStatus || cb.mStatus}</strong></div>
+                      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}><span style={{ color: '#9e9e9e' }}>Dispute Type <span style={{color:'red'}}>*</span> :</span> <strong style={{color: '#000', width: '140px', textTransform: 'uppercase'}}>{cb.adjType}</strong></div>
                       <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}><span style={{ color: '#9e9e9e' }}>Dispute Description <span style={{color:'red'}}>*</span> :</span> <strong style={{color: '#000', width: '140px'}}>13.1-Services Not Provided or Merchandise Not Received</strong></div>
                       <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '16px' }}><span style={{ color: '#9e9e9e' }}>Source Amount <span style={{color:'red'}}>*</span> :</span> <strong style={{color: '#000', width: '140px'}}>{cb.txnAmt}</strong></div>
                       <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}><span style={{ color: '#9e9e9e' }}>Re-presentment Received Date Credit <span style={{color:'red'}}>*</span> :</span> <strong style={{color: '#000', width: '140px'}}>-</strong></div>
@@ -4227,7 +4227,7 @@ function PartnerPortal({
       if (!filterSearchBy && !cb.rrn?.toLowerCase().includes(q) && !cb.txnId?.toLowerCase().includes(q) && !cb.userId?.toLowerCase().includes(q) && !cb.id?.toLowerCase().includes(q)) return false;
     }
     if (filterStatus && cb.mStatus !== filterStatus) return false;
-    if (filterDisputeType && cb.mSubStatus !== filterDisputeType) return false;
+    if (filterDisputeType && !(cb.adjType && cb.adjType.includes(filterDisputeType) && !(filterDisputeType === 'Arbitration' && cb.adjType.includes('Pre-Arbitration')))) return false;
     if (filterFrom && cb.createdDate && cb.createdDate < filterFrom) return false;
     if (filterTo && cb.createdDate && cb.createdDate > filterTo) return false;
     return true;
@@ -4655,7 +4655,7 @@ function PartnerPortal({
                           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}><span style={{ color: '#9e9e9e' }}>Remaining Days <span style={{color:'red'}}>*</span> :</span> <strong style={{color: '#000', width: '140px'}}>{cb.aging}</strong></div>
                         </div>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}><span style={{ color: '#9e9e9e' }}>Dispute Type <span style={{color:'red'}}>*</span> :</span> <strong style={{color: '#000', width: '140px', textTransform: 'uppercase'}}>{cb.mSubStatus || cb.mStatus}</strong></div>
+                          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}><span style={{ color: '#9e9e9e' }}>Dispute Type <span style={{color:'red'}}>*</span> :</span> <strong style={{color: '#000', width: '140px', textTransform: 'uppercase'}}>{cb.adjType}</strong></div>
                           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}><span style={{ color: '#9e9e9e' }}>Dispute Description <span style={{color:'red'}}>*</span> :</span> <strong style={{color: '#000', width: '140px'}}>13.1-Services Not Provided or Merchandise Not Received</strong></div>
                           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '16px' }}><span style={{ color: '#9e9e9e' }}>Source Amount <span style={{color:'red'}}>*</span> :</span> <strong style={{color: '#000', width: '140px'}}>{cb.txnAmt}</strong></div>
                           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}><span style={{ color: '#9e9e9e' }}>Re-presentment Received Date Credit <span style={{color:'red'}}>*</span> :</span> <strong style={{color: '#000', width: '140px'}}>-</strong></div>
