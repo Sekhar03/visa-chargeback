@@ -3429,7 +3429,7 @@ function AdminPortal({
                                           </svg>
                                         </button>
                                       )}
-                                      {adminTab === 'verification-pending' && isPendingVerification(cb) && (
+                                      {adminTab === 'verification-pending' && (
                                         <button
                                           type="button"
                                           className="btn btn-sm btn-primary"
