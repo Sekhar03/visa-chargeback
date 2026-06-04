@@ -3191,70 +3191,50 @@ function AdminPortal({
                   </div>
                 </div>
 
-                <div className="stats-grid" id="adminDashStats" style={{ gridTemplateColumns: 'repeat(5, 1fr)', gap: '16px' }}>
-                  <div className="stat-card" style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: '20px', display: 'flex', flexDirection: 'column' }}>
-                    <div style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '12px' }}>Total Transactions</div>
-                    <div style={{ display: 'flex', alignItems: 'flex-end', gap: '8px', marginBottom: '8px' }}>
-                      <span style={{ fontSize: '28px', fontWeight: '800', lineHeight: '1', color: 'var(--text)' }}>{stats.totalCount}</span>
-                      <span style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '4px' }}>Overall</span>
+                <div className="stats-grid" id="adminDashStats" style={{ gridTemplateColumns: 'repeat(5, 1fr)', gap: '20px', padding: '10px 0' }}>
+                  <div className="stat-card received" style={{ background: 'var(--card)', border: 'none', borderRadius: 'var(--radius-lg)', padding: '24px', display: 'flex', flexDirection: 'column', boxShadow: 'var(--shadow-md)', position: 'relative' }}>
+                    <div style={{ fontSize: '12px', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '16px' }}>Total Transactions</div>
+                    <div style={{ display: 'flex', alignItems: 'flex-end', gap: '8px', marginBottom: '12px' }}>
+                      <span style={{ fontSize: '32px', fontWeight: '800', lineHeight: '1', color: 'var(--text)' }}>{stats.totalCount}</span>
+                      <span style={{ fontSize: '14px', color: 'var(--text-muted)', marginBottom: '4px', fontWeight: '500' }}>Overall</span>
                     </div>
-                    <div style={{ fontSize: '14px', fontWeight: '600' }}>{formatINR(stats.totalAmt)}</div>
-                    <div style={{ marginTop: 'auto', paddingTop: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span style={{ fontSize: '12px', fontWeight: '600', color: 'var(--brand)' }}>+5.2%</span>
-                      <span style={{ fontSize: '11px', color: 'var(--text-light)' }}>vs yesterday</span>
-                    </div>
+                    <div style={{ fontSize: '16px', fontWeight: '700', color: 'var(--brand)' }}>{formatINR(stats.totalAmt)}</div>
                   </div>
 
-                  <div className="stat-card" style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: '20px', display: 'flex', flexDirection: 'column' }}>
-                    <div style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '12px' }}>Dispute Received</div>
-                    <div style={{ display: 'flex', alignItems: 'flex-end', gap: '8px', marginBottom: '8px' }}>
-                      <span style={{ fontSize: '28px', fontWeight: '800', lineHeight: '1', color: 'var(--text)' }}>{stats.totalCount}</span>
-                      <span style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '4px' }}>Claims log</span>
+                  <div className="stat-card received" style={{ background: 'var(--card)', border: 'none', borderRadius: 'var(--radius-lg)', padding: '24px', display: 'flex', flexDirection: 'column', boxShadow: 'var(--shadow-md)', position: 'relative' }}>
+                    <div style={{ fontSize: '12px', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '16px' }}>Dispute Received</div>
+                    <div style={{ display: 'flex', alignItems: 'flex-end', gap: '8px', marginBottom: '12px' }}>
+                      <span style={{ fontSize: '32px', fontWeight: '800', lineHeight: '1', color: 'var(--text)' }}>{stats.totalCount}</span>
+                      <span style={{ fontSize: '14px', color: 'var(--text-muted)', marginBottom: '4px', fontWeight: '500' }}>Claims log</span>
                     </div>
-                    <div style={{ fontSize: '14px', fontWeight: '600' }}>{formatINR(stats.totalAmt)}</div>
-                    <div style={{ marginTop: 'auto', paddingTop: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span style={{ fontSize: '12px', fontWeight: '600', color: 'var(--brand)' }}>+12.5%</span>
-                      <span style={{ fontSize: '11px', color: 'var(--text-light)' }}>vs yesterday</span>
-                    </div>
+                    <div style={{ fontSize: '16px', fontWeight: '700', color: 'var(--brand)' }}>{formatINR(stats.totalAmt)}</div>
                   </div>
                   
-                  <div className="stat-card" style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: '20px', display: 'flex', flexDirection: 'column' }}>
-                    <div style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '12px' }}>Dispute Open</div>
-                    <div style={{ display: 'flex', alignItems: 'flex-end', gap: '8px', marginBottom: '8px' }}>
-                      <span style={{ fontSize: '28px', fontWeight: '800', lineHeight: '1', color: 'var(--yellow)' }}>{stats.openCount}</span>
-                      <span style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '4px' }}>In SLA flight</span>
+                  <div className="stat-card open" style={{ background: 'var(--card)', border: 'none', borderRadius: 'var(--radius-lg)', padding: '24px', display: 'flex', flexDirection: 'column', boxShadow: 'var(--shadow-md)', position: 'relative' }}>
+                    <div style={{ fontSize: '12px', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '16px' }}>Dispute Open</div>
+                    <div style={{ display: 'flex', alignItems: 'flex-end', gap: '8px', marginBottom: '12px' }}>
+                      <span style={{ fontSize: '32px', fontWeight: '800', lineHeight: '1', color: 'var(--yellow)' }}>{stats.openCount}</span>
+                      <span style={{ fontSize: '14px', color: 'var(--text-muted)', marginBottom: '4px', fontWeight: '500' }}>In SLA flight</span>
                     </div>
-                    <div style={{ fontSize: '14px', fontWeight: '600' }}>{formatINR(stats.openAmt)}</div>
-                    <div style={{ marginTop: 'auto', paddingTop: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span style={{ fontSize: '12px', fontWeight: '600', color: 'var(--yellow)' }}>-4.2%</span>
-                      <span style={{ fontSize: '11px', color: 'var(--text-light)' }}>vs yesterday</span>
-                    </div>
+                    <div style={{ fontSize: '16px', fontWeight: '700', color: 'var(--yellow)' }}>{formatINR(stats.openAmt)}</div>
                   </div>
                   
-                  <div className="stat-card" style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: '20px', display: 'flex', flexDirection: 'column' }}>
-                    <div style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '12px' }}>Dispute Lost</div>
-                    <div style={{ display: 'flex', alignItems: 'flex-end', gap: '8px', marginBottom: '8px' }}>
-                      <span style={{ fontSize: '28px', fontWeight: '800', lineHeight: '1', color: 'var(--red)' }}>{stats.lostCount}</span>
-                      <span style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '4px' }}>Auto-TAT/Conceded</span>
+                  <div className="stat-card lost" style={{ background: 'var(--card)', border: 'none', borderRadius: 'var(--radius-lg)', padding: '24px', display: 'flex', flexDirection: 'column', boxShadow: 'var(--shadow-md)', position: 'relative' }}>
+                    <div style={{ fontSize: '12px', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '16px' }}>Dispute Lost</div>
+                    <div style={{ display: 'flex', alignItems: 'flex-end', gap: '8px', marginBottom: '12px' }}>
+                      <span style={{ fontSize: '32px', fontWeight: '800', lineHeight: '1', color: 'var(--red)' }}>{stats.lostCount}</span>
+                      <span style={{ fontSize: '14px', color: 'var(--text-muted)', marginBottom: '4px', fontWeight: '500' }}>Auto-TAT/Conceded</span>
                     </div>
-                    <div style={{ fontSize: '14px', fontWeight: '600' }}>{formatINR(stats.lostAmt)}</div>
-                    <div style={{ marginTop: 'auto', paddingTop: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span style={{ fontSize: '12px', fontWeight: '600', color: 'var(--red)' }}>+2.1%</span>
-                      <span style={{ fontSize: '11px', color: 'var(--text-light)' }}>vs yesterday</span>
-                    </div>
+                    <div style={{ fontSize: '16px', fontWeight: '700', color: 'var(--red)' }}>{formatINR(stats.lostAmt)}</div>
                   </div>
                   
-                  <div className="stat-card" style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: '20px', display: 'flex', flexDirection: 'column' }}>
-                    <div style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '12px' }}>Dispute Won</div>
-                    <div style={{ display: 'flex', alignItems: 'flex-end', gap: '8px', marginBottom: '8px' }}>
-                      <span style={{ fontSize: '28px', fontWeight: '800', lineHeight: '1', color: 'var(--green)' }}>{stats.wonCount}</span>
-                      <span style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '4px' }}>Re-presentments won</span>
+                  <div className="stat-card won" style={{ background: 'var(--card)', border: 'none', borderRadius: 'var(--radius-lg)', padding: '24px', display: 'flex', flexDirection: 'column', boxShadow: 'var(--shadow-md)', position: 'relative' }}>
+                    <div style={{ fontSize: '12px', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '16px' }}>Dispute Won</div>
+                    <div style={{ display: 'flex', alignItems: 'flex-end', gap: '8px', marginBottom: '12px' }}>
+                      <span style={{ fontSize: '32px', fontWeight: '800', lineHeight: '1', color: 'var(--green)' }}>{stats.wonCount}</span>
+                      <span style={{ fontSize: '14px', color: 'var(--text-muted)', marginBottom: '4px', fontWeight: '500' }}>Re-presentments</span>
                     </div>
-                    <div style={{ fontSize: '14px', fontWeight: '600' }}>{formatINR(stats.wonAmt)}</div>
-                    <div style={{ marginTop: 'auto', paddingTop: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span style={{ fontSize: '12px', fontWeight: '600', color: 'var(--green)' }}>+8.4%</span>
-                      <span style={{ fontSize: '11px', color: 'var(--text-light)' }}>vs yesterday</span>
-                    </div>
+                    <div style={{ fontSize: '16px', fontWeight: '700', color: 'var(--green)' }}>{formatINR(stats.wonAmt)}</div>
                   </div>
                 </div>
               </div>
